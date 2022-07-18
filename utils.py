@@ -60,6 +60,7 @@ def indices_in_interval(x, x_range):
     return np.where((x>x_range[0]) & (x<x_range[1]))[0]
 
 
+# 1
 def find_interval_max(x, y, x_range):
     """ Return the index of the maximum value (peak) in an interval. 
 
@@ -77,6 +78,25 @@ def find_interval_max(x, y, x_range):
     return peak_index
 
 
+# 1.5
+def find_interval_peak(x, y, x_range):
+    """ Return the index of a peak in an interval. 
+    (Use function find_peaks() directly.)
+
+    The inputs:
+        x: 1-D array.
+        y: 1-D array.
+        x_range: 1-D list or array of 2 elements, the minimum and maximum of 
+                 the range.
+    """
+    interval_indices = indices_in_interval(x, x_range)
+    index_range_min = interval_indices[0]
+    y_in_interval = y[interval_indices]
+    temp_index, peak_property = find_peaks(y_in_interval, height=0, distance=100)
+    peak_index = index_range_min + temp_index
+    return peak_index, peak_property
+
+
 def print_peak_positions(peaks_positions, x_range):
     """ Print positions for peaks in an interval. 
     
@@ -84,13 +104,16 @@ def print_peak_positions(peaks_positions, x_range):
         peaks_positions: 2-D array of 2 columns
         x_range: 1-D list or array of 2 elements
     """
-    print(f"In interval [{x_range[0]}, {x_range[1]}]， peaks occur for:")
+    print(f"In interval [{x_range[0]}, {x_range[1]}]:")
     for i in range(len(peaks_positions)):
-        print(f"    {peaks_positions[i]}")
+        if len(peaks_positions[i]) == 1:
+            print(f"    {i}th set of data has no peak here. ")
+        elif len(peaks_positions[i]) == 2:
+            print(f"    {i}th set of data has peak at: {peaks_positions[i]}. ")
 
 
-# 1. 找interval内的peaks
-def plot_peaks_in_range(x, ys, x_range):
+# 1. look for peaks in an interval (by maximum value)
+def plot_maxes_in_range(x, ys, x_range):
     """ Draw a figure for the data read from file and mark the peaks for an 
     interval. 
     
@@ -124,7 +147,45 @@ def plot_peaks_in_range(x, ys, x_range):
     print_peak_positions(peaks_positions, x_range)
 
 
-# 2. 找所有的peaks
+# 1.5. look for peaks in an interval (by using function find_peaks())
+def plot_peaks_in_range(x, ys, x_range):
+    """ Draw a figure for the data read from file and mark the peaks for an 
+    interval. 
+    
+    The inputs:
+        x: 1-D array.
+        ys: 2-D array.
+        x_range: 1-D list or array of 2 elements, the minimum and maximum of 
+                 the range.
+    """
+    peaks_positions = []
+    for i in range(ys.shape[0]):
+        current_y = ys[i]
+        plt.plot(x, current_y, linewidth = 0.6)  # the lines
+        # Look for the peaks:
+        peak_index, peak_property = find_interval_peak(x, current_y, x_range)
+
+        plt.plot(x[peak_index], current_y[peak_index], ".")
+
+        # print(x[peak_index])
+        # print(current_y[peak_index])
+
+        current_peak = []
+        if len(peak_index) == 0: # no peak
+            current_peak.append(-1)
+        else:
+            current_peak.append(x[peak_index][0])
+            current_peak.append(current_y[peak_index][0])
+        peaks_positions.append(current_peak)
+
+    plt.xlabel('2-theta') 
+    plt.ylabel('Intensity') 
+    plt.show()
+
+    print_peak_positions(peaks_positions, x_range)
+
+
+# 2. look for all peaks 
 def plot_peaks(x, ys):
     """ Draw a figure for the data read from file and mark the peaks. 
 

@@ -5,6 +5,7 @@ from utils import (
     separate_data,
     plot_initial_figure,
     plot_peaks,
+    plot_maxes_in_range,
     plot_peaks_in_range)
 
 
