@@ -21,3 +21,15 @@ def read_molecule_data(file_path):
     return data_needed
 
 
+def separate_data(data): 
+    """ Return 2_theta (x-axis) and sets of data for the molecule (y-axis).
+
+    Input: 2-D array, the first line is for x-axis, other lines for y-axis.
+    """
+    x = data[0]  
+    ys = data[1:] 
+    print(x)
+    print(ys)
+    return x, ys
+
+
