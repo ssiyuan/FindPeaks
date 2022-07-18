@@ -3,6 +3,7 @@
 import csv
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def read_molecule_data(file_path):
@@ -28,8 +29,18 @@ def separate_data(data):
     """
     x = data[0]  
     ys = data[1:] 
-    print(x)
-    print(ys)
     return x, ys
 
 
+def plot_initial_figure(x, ys):
+    """ Draw a figure for the data read from file. 
+
+    Inputs:
+        x: 1-D array.
+        ys: 2-D array. 
+    """
+    for i in range(ys.shape[0]):
+        plt.plot(x, ys[i], linewidth = 0.6)
+    plt.xlabel('2-theta') 
+    plt.ylabel('Intensity')
+    plt.show() 
