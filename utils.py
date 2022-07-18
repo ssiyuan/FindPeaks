@@ -5,6 +5,8 @@ import csv
 import numpy as np
 import matplotlib.pyplot as plt
 
+from scipy.signal import find_peaks
+
 
 def read_molecule_data(file_path):
     """ Return the data from file_path, and convert to the right format.
@@ -44,3 +46,26 @@ def plot_initial_figure(x, ys):
     plt.xlabel('2-theta') 
     plt.ylabel('Intensity')
     plt.show() 
+
+
+def plot_peaks(x, ys):
+    """ Draw a figure for the data read from file and mark the peaks. 
+
+    Inputs:
+        x: 1-D array.
+        ys: 2-D array.  
+    """
+    for i in range(ys.shape[0]):
+    # for i in range(13,14):
+        current_y = ys[i]
+        plt.plot(x, current_y, linewidth = 0.6)  # the lines
+        # Look for the peaks:
+        peak_indices, peak_property = find_peaks(current_y, height=0, 
+                                    prominence=(0.0063, None))
+        plt.plot(x[peak_indices], current_y[peak_indices], ".")
+    # plt.plot(x, ys[0], linewidth = 0.6)
+    plt.xlabel('2-theta') 
+    plt.ylabel('Intensity') 
+    
+    # plt.plot(x[peak_indices], ys[1][peak_indices], "o")
+    plt.show()
