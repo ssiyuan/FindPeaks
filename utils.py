@@ -49,8 +49,8 @@ def plot_initial_figure(x, ys):
 
 
 def indices_in_interval(x, x_range):
-    """ Return an array of indices of the input array's elements, which are in 
-    the given range.
+    """ Return an array of indices, corresponding to the elements in the given 
+    range.
 
     Inputs:
         x: 1-D array.
@@ -106,7 +106,7 @@ def print_peak_positions(peaks_positions, x_range):
     """
     print(f"In interval [{x_range[0]}, {x_range[1]}]:")
     for i in range(len(peaks_positions)):
-        if len(peaks_positions[i]) == 1:
+        if len(peaks_positions[i]) == 1:  # element is -1, meaning no value
             print(f"    {i}th set of data has no peak here. ")
         elif len(peaks_positions[i]) == 2:
             print(f"    {i}th set of data has peak at: {peaks_positions[i]}. ")
@@ -207,3 +207,138 @@ def plot_peaks(x, ys):
     
     # plt.plot(x[peak_indices], ys[1][peak_indices], "o")
     plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def indices_in_intervals(x, x_ranges):
+    """ Return a 2-D list of indices, corresponding to elements in the given 
+    ranges. Each row is for an interval.
+
+    Inputs:
+        x: 1-D array.
+        x_ranges: 2-D list or array of 2 columns, 1st col: the minimum of range
+                                                2nd col: maximum of range
+    """
+    indices_in_intervals = []
+    for x_range in x_ranges:
+        indices_in_intervals.append(np.where((x>x_range[0]) & (x<x_range[1]))[0])
+    return indices_in_intervals
+
+
+def find_peaks_in_ranges(x, y, x_ranges):
+    """ Return indices and properties of peaks in one or more given intervals. 
+    (Use function find_peaks() directly.)
+
+    The inputs:
+        x: 1-D array.
+        y: 1-D array.
+        x_ranges: 2-D list or array of 2 columns, 1st col: the minimum of range
+                                                2nd col: maximum of range.
+    """
+    intervals_indices = indices_in_intervals(x, x_ranges)
+    peak_indices, peak_properties= [], []
+    for interval_indices in intervals_indices: 
+        index_range_min = interval_indices[0]
+        y_in_interval = y[interval_indices]
+        temp_index, peak_property = find_peaks(y_in_interval, height=0, distance=100)
+        peak_index = index_range_min + temp_index
+
+        peak_indices.append(peak_index)
+        peak_properties.append(peak_property)
+
+    return peak_indices, peak_properties
+
+
+# 改注释
+def print_peaks_positions(peaks_positions, x_ranges):
+    """ Print positions for peaks in an interval. 
+    
+    Inputs: 
+        peaks_positions: 3-D array of 2 columns
+        x_range: 2-D list or array of 2 elements
+    """
+    j = 0  # j: the j-th interval
+    for x_range in x_ranges:
+        print(f"\n\nIn interval [{x_range[0]}, {x_range[1]}]:")
+        for i in range(len(peaks_positions)):  # i: the i-th set of data
+            if len(peaks_positions[i][j]) == 1:  # element is -1: no value
+                print(f"{i}th set of data has no peak here.")
+            elif len(peaks_positions[i][j]) == 2:
+                print(f"{i}th set of data has peak at: {peaks_positions[i][j]}.")
+        j += 1
+
+
+def list_to_tuple(x_ranges):
+    """ If the input is a list of shape (2,), turn it to a tuple. 
+    e.g. [1,1] --> [[1,1]]
+    """
+    temp = []
+    temp.append(x_ranges)
+    return temp
+
+
+# 改注释
+# 3. look for peaks in several intervals (by using function find_peaks())
+def plot_peaks_in_ranges(x, ys, x_ranges):
+    """ Draw a figure for the data read from file and mark the peaks for an 
+    interval. 
+    
+    The inputs:
+        x: 1-D array.
+        ys: 2-D array.
+        x_range: 2-D list or array of 2 elements, the minimum and maximum of 
+                 the range. 
+    """
+    if np.array(x_ranges).shape == (2,):  # check the input format 
+        x_ranges = list_to_tuple(x_ranges)
+
+    peaks_positions = []
+    for i in range(len(ys)):  # the i-th data set for y-axis
+        current_y = ys[i]
+        plt.plot(x, current_y, linewidth = 0.6)  # the lines
+        peak_indices, peak_properties = find_peaks_in_ranges(x, current_y, 
+                                        x_ranges)
+
+        current_peaks = []  # peaks for a data set in several intervals
+        for j in range(len(x_ranges)):  # the j-th interval on x-axis
+            peak_index = peak_indices[j]
+            peak_x = x[peak_index]
+            peak_y = current_y[peak_index]
+            plt.plot(peak_x, peak_y, ".")
+
+            current_peak = []  # the peak for an interval
+            if len(peak_index) == 0: # no peak
+                current_peak.append(-1)
+            else:
+                current_peak.append(peak_x[0])
+                current_peak.append(peak_y[0])
+            current_peaks.append(current_peak)
+
+        peaks_positions.append(current_peaks)
+
+    plt.xlabel('2-theta') 
+    plt.ylabel('Intensity') 
+    plt.show()
+
+    print_peaks_positions(peaks_positions, x_ranges)
