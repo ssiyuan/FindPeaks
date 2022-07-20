@@ -280,7 +280,7 @@ def print_peaks_positions(peaks_positions, x_ranges):
     """
     j = 0  # j: the j-th interval
     for x_range in x_ranges:
-        print(f"\n\nIn interval [{x_range[0]}, {x_range[1]}]:")
+        print(f"\nIn interval [{x_range[0]}, {x_range[1]}]:")
         for i in range(len(peaks_positions)):  # i: the i-th set of data
             if len(peaks_positions[i][j]) == 1:  # element is -1: no value
                 print(f"{i}th set of data has no peak here.")
@@ -342,3 +342,11 @@ def plot_peaks_in_ranges(x, ys, x_ranges):
     plt.show()
 
     print_peaks_positions(peaks_positions, x_ranges)
+
+
+def gaussian(x, y, sigma):
+    mean = sum(x*y)/sum(y)
+    sigma = (np.sqrt(sum(np.power(x - mean))/sum(y)))
+    return max(x) * np.exp(-np.power((x-31)/sigma))
+
+

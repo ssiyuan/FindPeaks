@@ -19,8 +19,8 @@ def main():
     # plot_peaks_in_range(x, ys, [6,7])
     # plot_peaks_in_range(x, ys, [1.6, 1.9])
     # plot_maxes_in_range(x, ys, [1.6, 1.9])
-    # plot_peaks_in_ranges(x, ys, [[1.6, 1.9], [6,7]])
-    plot_peaks_in_ranges(x, ys, [1.6, 1.9])
+    plot_peaks_in_ranges(x, ys, [[1.6, 1.9], [6,7]])
+    # plot_peaks_in_ranges(x, ys, [1.6, 1.9])
 
 
 if __name__ == "__main__":
