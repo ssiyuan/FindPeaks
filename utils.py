@@ -346,7 +346,5 @@ def plot_peaks_in_ranges(x, ys, x_ranges):
 
 def gaussian(x, y, sigma):
     mean = sum(x*y)/sum(y)
-    sigma = (np.sqrt(sum(np.power(x - mean))/sum(y)))
-    return max(x) * np.exp(-np.power((x-31)/sigma))
-
-
+    sigma = (np.sqrt(sum((x - mean)**2)/sum(y)))
+    return max(y) * np.exp(-((x-max(x))/sigma)**2)
