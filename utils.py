@@ -25,13 +25,17 @@ def read_molecule_data(file_path):
 
 
 def separate_data(data): 
-    """ Return 2_theta (x-axis) and sets of data for the molecule (y-axis).
+    """ Seperate the first column of the file and other columns.
+        1st column: 2-theta (x-axis)
+        other columns: intensity (y-axis)
+        Return the resulted 2-theta and intensities after log10 processing. 
 
     Input: 2-D array, the first line is for x-axis, other lines for y-axis.
     """
-    x = data[0]  
-    ys = data[1:] 
-    return x, ys
+    x = data[0]  # 2-theta
+    ys = data[1:]  # intensity
+    # process data with log10 to see more obvious changes in peaks 
+    return np.log10(x), np.log10(ys)
 
 
 def plot_initial_figure(x, ys):
@@ -261,7 +265,7 @@ def find_peaks_in_ranges(x, y, x_ranges):
     for interval_indices in intervals_indices: 
         index_range_min = interval_indices[0]
         y_in_interval = y[interval_indices]
-        temp_index, peak_property = find_peaks(y_in_interval, height=0, distance=100)
+        temp_index, peak_property = find_peaks(y_in_interval, height=-2.75, distance=100)
         peak_index = index_range_min + temp_index
 
         peak_indices.append(peak_index)
@@ -345,6 +349,9 @@ def plot_peaks_in_ranges(x, ys, x_ranges):
 
 
 def gaussian(x, y, sigma):
+    a = max(y)  # the height of the curve's peak
+    b = max(x)  # the position of the center of the peak
+    c  # the width of the curve 
     mean = sum(x*y)/sum(y)
     sigma = (np.sqrt(sum((x - mean)**2)/sum(y)))
-    return max(y) * np.exp(-((x-max(x))/sigma)**2)
+    return h * np.exp(-((x-max(x))/sigma)**2)

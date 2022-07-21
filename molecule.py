@@ -16,11 +16,11 @@ def main():
     x, ys = separate_data(data)
     # plot_initial_figure(x, ys)
     # plot_peaks(x, ys)
-    # plot_peaks_in_range(x, ys, [6,7])
-    # plot_peaks_in_range(x, ys, [1.6, 1.9])
-    # plot_maxes_in_range(x, ys, [1.6, 1.9])
-    plot_peaks_in_ranges(x, ys, [[1.6, 1.9], [6,7]])
-    # plot_peaks_in_ranges(x, ys, [1.6, 1.9])
+    # plot_peaks_in_range(x, ys, [0.725,0.875])
+    # plot_peaks_in_range(x, ys, [0.2, 0.29])
+    # plot_maxes_in_range(x, ys, [0.2, 0.29])
+    plot_peaks_in_ranges(x, ys, [[0.2, 0.29], [0.725,0.875]])
+    # plot_peaks_in_ranges(x, ys, [0.2, 0.29])
 
 
 if __name__ == "__main__":
