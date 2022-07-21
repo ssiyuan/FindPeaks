@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from scipy.signal import find_peaks
+from scipy.optimize import curve_fit
 
 
 def read_molecule_data(file_path):
@@ -270,7 +271,6 @@ def find_peaks_in_ranges(x, y, x_ranges):
 
         peak_indices.append(peak_index)
         peak_properties.append(peak_property)
-
     return peak_indices, peak_properties
 
 
@@ -348,10 +348,26 @@ def plot_peaks_in_ranges(x, ys, x_ranges):
     print_peaks_positions(peaks_positions, x_ranges)
 
 
-def gaussian(x, y, sigma):
-    a = max(y)  # the height of the curve's peak
-    b = max(x)  # the position of the center of the peak
-    c  # the width of the curve 
-    mean = sum(x*y)/sum(y)
-    sigma = (np.sqrt(sum((x - mean)**2)/sum(y)))
-    return h * np.exp(-((x-max(x))/sigma)**2)
+def gaussian(x, height, center, sigma): 
+    """ The function to fit the curve.
+    Return the y values resulted from gaussian function. 
+
+    height: the height of the curve's peak
+    center: the position of the center of the peak
+    sigma: the width of the curve
+    """
+    return height * np.exp(-(x-center)**2/(2*(sigma**2)))
+
+
+def fit_gaussian(x, y):
+    """ Return parameters of func gaussian() needed to fit gaussian model, and
+     the standard deviation.
+
+    x: 1-D array
+    y: 1-D array
+    """
+    popt, pcov = curve_fit(gaussian, x, y)
+    error = np.sqrt(np.diag(pcov))  # standard deviation
+    return popt, error
+
+
