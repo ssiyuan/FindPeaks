@@ -265,7 +265,7 @@ def find_peaks_in_ranges(x, y, x_ranges):
     for interval_indices in intervals_indices: 
         index_range_min = interval_indices[0]
         y_in_interval = y[interval_indices]
-        temp_index, peak_property = find_peaks(y_in_interval, height=-2.75, distance=100)
+        temp_index, peak_property = find_peaks(y_in_interval, distance=100)
         peak_index = index_range_min + temp_index
 
         peak_indices.append(peak_index)
