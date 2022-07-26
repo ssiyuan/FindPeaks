@@ -8,7 +8,7 @@ from utils import (
     plot_maxes_in_range,
     plot_peaks_in_range,
     plot_peaks_in_ranges,
-    plot_gaussian_in_ranges)
+    fit_gaussian)
 
 
 def main():
@@ -23,7 +23,7 @@ def main():
     # plot_peaks_in_ranges(x, ys, [[0.2, 0.29], [0.725,0.875]])
     # plot_peaks_in_ranges(x, ys, [0.2, 0.29])
     output_path = Path("Resulted_Figures")
-    plot_gaussian_in_ranges(x, ys, [0.725,0.875], output_path)
+    fit_gaussian(x, ys[0], [6.2, 6.5])
 
 
 if __name__ == "__main__":
