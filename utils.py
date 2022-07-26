@@ -388,7 +388,7 @@ def gaussian(x, height, center, sigma):
     center: the position of the center of the peak
     sigma: the width of the curve
     """
-    return height/(sigma*math.sqrt(2*math.pi)) * np.exp(-(x-center)**2/(2*(sigma**2)))
+    return height * np.exp(-(x-center)**2/(2*(sigma**2)))
 
 
 # 改备注
