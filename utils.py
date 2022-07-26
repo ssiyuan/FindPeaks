@@ -100,7 +100,7 @@ def find_interval_peak(x, y, x_range):
     interval_indices = indices_in_interval(x, x_range)
     index_range_min = interval_indices[0]
     y_in_interval = y[interval_indices]
-    temp_index, peak_property = find_peaks(y_in_interval, height=0, distance=100)
+    temp_index, peak_property = find_peaks(y_in_interval, height=0.01, distance=100)
     peak_index = index_range_min + temp_index
     return peak_index, peak_property
 
@@ -171,7 +171,7 @@ def plot_peaks_in_range(x, ys, x_range):
         current_y = ys[i]
         plt.loglog(x, current_y, linewidth = 0.6)  # the lines
         # Look for the peaks:
-        peak_index, peak_property = find_interval_peak(x, current_y, x_range)
+        peak_index, _ = find_interval_peak(x, current_y, x_range)
 
         plt.loglog(x[peak_index], current_y[peak_index], ".")
 
@@ -301,7 +301,7 @@ def find_peaks_in_ranges(x, y, x_ranges):
 
 
 # 改注释
-def print_peaks_positions(peaks_positions, peaks_widths, x_ranges):
+def print_peaks_positions(peaks_positions, x_ranges):
     """ Print positions for peaks in an interval. 
     
     Inputs: 
@@ -319,7 +319,6 @@ def print_peaks_positions(peaks_positions, peaks_widths, x_ranges):
             elif len(peaks_positions[i][j]) == 2:
                 print(f"{i}th data set: ")
                 print(f"peak position:{peaks_positions[i][j]}")
-                print(f"full width at half maximum intensity: {peaks_widths[i][j]}")
         j += 1
 
 
@@ -353,8 +352,7 @@ def plot_peaks_in_ranges(x, ys, x_ranges):
     for i in range(len(ys)):  # the i-th data set for y-axis
         current_y = ys[i]
         plt.loglog(x, current_y, linewidth = 0.6)  # the lines
-        peak_indices, peak_properties = find_peaks_in_ranges(x, current_y, 
-                                        x_ranges)
+        peak_indices, _ = find_peaks_in_ranges(x, current_y, x_ranges)
 
         current_peaks = []  # peaks for a data set in several intervals
         for j in range(len(x_ranges)):  # the j-th interval on x-axis
@@ -391,7 +389,7 @@ def gaussian(x, height, center, sigma):
     return height * np.exp(-(x-center)**2/(2*(sigma**2)))
 
 
-# 改备注
+# 改备注 a test 找到一个范围的gaussian curve and print
 def fit_gaussian(x, y, x_range):
 #     """ Return parameters of func gaussian() needed to fit gaussian model, and
 #      the standard deviation.
@@ -403,16 +401,91 @@ def fit_gaussian(x, y, x_range):
     x_in_interval = x[interval_indices]
     y_in_interval = y[interval_indices]
     
-    popt, pcov = curve_fit(gaussian, x_in_interval, y_in_interval, maxfev = 5000)
+    popt, pcov = curve_fit(gaussian, x_in_interval, y_in_interval, maxfev = 1000000)
     # error = np.sqrt(np.diag(pcov))  # standard deviation
     x_gaussian = np.linspace(x_in_interval[0], max(x_in_interval), 100)
-    # y_gaussian = gaussian(x_gaussian, *popt)
-    y_gaussian = gaussian(x_in_interval, *popt)
+    y_gaussian = gaussian(x_gaussian, *popt)
 
-    plt.plot(x, y, linewidth = 0.6)  # the lines
-    plt.plot(x_in_interval, y_gaussian, linewidth = 0.6, linestyle = '-')
+    gaussian_result = []
+    gaussian_result.append(x_gaussian)
+    gaussian_result.append(y_gaussian)
+    # plt.plot(x, y, linewidth = 0.6)  # the lines
+    # plt.plot(x_in_interval, y_gaussian, linewidth = 0.6, linestyle = ':')
+    # plt.xlabel('2-theta') 
+    # plt.ylabel('Intensity') 
+    # plt.show()
+
+    return popt, gaussian_result
+
+
+# 对于要求找peak的所有地方，找到peak以及对应的高斯曲线
+def fit_gaussian_full(x, ys, x_ranges):
+
+    x_ranges = check_input_format(x_ranges)
+
+    peaks_positions = []
+    popts = []
+    for i in range(len(ys)):  # the i-th data set for y-axis
+        current_y = ys[i]
+        plt.plot(x, current_y, linewidth = 0.6)  # the lines
+        # peak_indices, peak_properties = find_peaks_in_ranges(x, current_y, 
+        #                                 x_ranges)
+
+        current_peaks = []  # peaks for a line
+        current_popts = []  # parameters of gaussian for a line
+        for x_range in x_ranges:  
+            peak_index, _ = find_interval_peak(x, current_y, x_range)
+            peak_x = x[peak_index]
+            peak_y = current_y[peak_index]
+            plt.plot(peak_x, peak_y, ".")
+
+            current_peak = []  # the peak for an interval
+
+            if len(peak_index) == 0: # no peak
+                current_peak.append(-1)
+                current_popts.append([-1, -1, -1])
+            else:
+                current_peak.append(peak_x[0])
+                current_peak.append(peak_y[0])
+
+                popt, gaussian_result = fit_gaussian(x, current_y, x_range)
+                current_popts.append(popt)
+                plt.plot(gaussian_result[0], gaussian_result[1], linewidth = 0.8, linestyle = '--')
+            current_peaks.append(current_peak)
+
+        peaks_positions.append(current_peaks)
+        popts.append(current_popts)
+
     plt.xlabel('2-theta') 
     plt.ylabel('Intensity') 
     plt.show()
 
-    return popt
+    print_all(peaks_positions, popts, x_ranges)
+
+
+# 改注释
+def print_all(peaks_positions, popts, x_ranges):
+    """ Print positions for peaks in an interval. 
+    
+    Inputs: 
+        peaks_positions: 3-D array of 2 columns
+        2-D list or array of 2 columns, 1st col: the minimum of range
+                                                2nd col: maximum of range
+    """
+    j = 0  # j: the j-th interval
+    for x_range in x_ranges:
+        print(f"\n\nIn {j}th interval [{x_range[0]}, {x_range[1]}]:")
+        for i in range(len(peaks_positions)):  # i: the i-th set of data
+            if len(peaks_positions[i][j]) == 1:  # element is -1: no value
+                print(f"\n{i}th data set: no peak here")
+            elif len(peaks_positions[i][j]) == 2:
+                print(f"\n{i}th data set: ")
+                print(f"peak position:{peaks_positions[i][j]}")
+                print(f"full width at half maximum intensity: {popts[i][j][2]}")
+
+        j += 1
+
+
+
+
+# 
