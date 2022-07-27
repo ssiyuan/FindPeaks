@@ -386,7 +386,7 @@ def gaussian(x, h, xc, w):
     xc: the position of the center of the peak
     w: the width of the curve
     """
-    return h * np.exp(-(x-xc)**2/(2*(w**2)))
+    return h/(w*(math.sqrt(2*math.pi))) * np.exp(-(x-xc)**2/(2*(w**2)))
 
 
 # 改备注 a test 找到一个范围的gaussian curve and print
@@ -404,7 +404,10 @@ def fit_gaussian(x, y, x_range):
     popt, pcov = curve_fit(gaussian, x_in_interval, y_in_interval, maxfev = 1000000)
     error = np.sqrt(np.diag(pcov))  # standard deviation
     x_gaussian = np.linspace(x_in_interval[0], max(x_in_interval), 100)
+    # x_gaussian = np.linspace(x[0], max(x), 1000)
     y_gaussian = gaussian(x_gaussian, *popt)
+    whole_popt = popt.tolist()
+    whole_popt.append(math.sqrt(math.pi/abs(popt[2])))
 
     gaussian_result = []
     gaussian_result.append(x_gaussian)
@@ -415,7 +418,7 @@ def fit_gaussian(x, y, x_range):
     # plt.ylabel('Intensity') 
     # plt.show()
 
-    return popt, error, gaussian_result
+    return np.array(whole_popt), error, gaussian_result
 
 
 # def check_peak(x, current_y, x_range):
@@ -494,6 +497,8 @@ def print_curve_fit(peaks_positions, popts, errors, x_ranges):
                 print(f"height = {'%.6f'%popts[i][j][0]} (+/-) {'%.6f'%errors[i][j][0]}")
                 print(f"center = {'%.6f'%popts[i][j][1]} (+/-) {'%.6f'%errors[i][j][1]}")
                 print(f"wideth = {'%.6f'%popts[i][j][2]} (+/-) {'%.6f'%errors[i][j][2]}")
+                if (len(popts[i][j])==4):
+                    print(f"area = {'%.6f'%popts[i][j][3]} ")
 
         j += 1
 
@@ -508,5 +513,87 @@ def lorentz(x, y0, xc, w, a):
     a: area of the curve
     """
     pi = math.pi
-    return y0 + (2*a/pi)*(w/(4*(x-xc)**2+w**2))
+    return y0 + (2*a/pi)*(w/(4*(x-xc)**2 + w**2))
 
+
+# def lorentz(x, amp1, wid1, cen1): 
+#     return amp1*wid1**2/((x-cen1)**2+wid1**2)
+
+
+# 改备注 a test 找到一个范围的lorentz curve and print
+def fit_lorentz(x, y, x_range):
+#     """ Return parameters of func lorentz() needed to fit lorentz model, and
+#      the standard deviation.
+
+#     x: 1-D array
+#     y: 1-D array
+#     """
+    interval_indices = indices_in_interval(x, x_range)
+    x_in_interval = x[interval_indices]
+    y_in_interval = y[interval_indices]
+    
+    popt, pcov = curve_fit(lorentz, x_in_interval, y_in_interval, maxfev = 1000000)
+    error = np.sqrt(np.diag(pcov))  # standard deviation
+    x_lorentz = np.linspace(x_in_interval[0], max(x_in_interval), 100)
+    y_lorentz = lorentz(x_lorentz, *popt)
+
+    lorentz_result = []
+    lorentz_result.append(x_lorentz)
+    lorentz_result.append(y_lorentz)
+    # plt.plot(x, y, linewidth = 0.6)  # the lines
+    # plt.plot(x_in_interval, y_lorentz, linewidth = 0.6, linestyle = ':')
+    # plt.xlabel('2-theta') 
+    # plt.ylabel('Intensity') 
+    # plt.show()
+
+    return popt, error, lorentz_result
+
+
+# 对于要求找peak的所有地方，找到peak以及对应的lorentz曲线
+def fit_lorentz_full(x, ys, x_ranges):
+
+    x_ranges = check_input_format(x_ranges)
+
+    peaks_positions = []
+    loren_popts = []
+    loren_errors = []
+    for i in range(len(ys)):  # the i-th data set for y-axis
+        current_y = ys[i]
+        plt.plot(x, current_y, linewidth = 0.6)  # the lines
+        # peak_indices, peak_properties = find_peaks_in_ranges(x, current_y, 
+        #                                 x_ranges)
+
+        current_peaks = []  # peaks for a line
+        current_loren_popts = []  # parameters of lorentz for a line
+        current_loren_errors = []
+        for x_range in x_ranges:  
+            peak_index, _ = find_interval_peak(x, current_y, x_range)
+            peak_x = x[peak_index]
+            peak_y = current_y[peak_index]
+            plt.plot(peak_x, peak_y, ".")
+
+            current_peak = []  # the peak for an interval
+
+            if len(peak_index) == 0: # no peak
+                current_peak.append(-1)
+                current_loren_popts.append([-1, -1, -1])
+                current_loren_errors.append([-1, -1, -1])
+            else:
+                current_peak.append(peak_x[0])
+                current_peak.append(peak_y[0])
+
+                popt, error, lorentz_result = fit_lorentz(x, current_y, x_range)
+                current_loren_popts.append(popt)
+                current_loren_errors.append(error)
+                plt.plot(lorentz_result[0], lorentz_result[1], linewidth = 0.8, linestyle = '--')
+            current_peaks.append(current_peak)
+
+        peaks_positions.append(current_peaks)
+        loren_popts.append(current_loren_popts)
+        loren_errors.append(current_loren_errors)
+
+    plt.xlabel('2-theta') 
+    plt.ylabel('Intensity') 
+    plt.show()
+
+    print_curve_fit(peaks_positions, loren_popts, loren_errors, x_ranges)
