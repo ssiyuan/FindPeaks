@@ -402,7 +402,7 @@ def fit_gaussian(x, y, x_range):
     y_in_interval = y[interval_indices]
     
     popt, pcov = curve_fit(gaussian, x_in_interval, y_in_interval, maxfev = 1000000)
-    # error = np.sqrt(np.diag(pcov))  # standard deviation
+    error = np.sqrt(np.diag(pcov))  # standard deviation
     x_gaussian = np.linspace(x_in_interval[0], max(x_in_interval), 100)
     y_gaussian = gaussian(x_gaussian, *popt)
 
@@ -415,7 +415,12 @@ def fit_gaussian(x, y, x_range):
     # plt.ylabel('Intensity') 
     # plt.show()
 
-    return popt, gaussian_result
+    return popt, error, gaussian_result
+
+
+# def check_peak(x, current_y, x_range):
+
+    
 
 
 # 对于要求找peak的所有地方，找到peak以及对应的高斯曲线
@@ -424,7 +429,8 @@ def fit_gaussian_full(x, ys, x_ranges):
     x_ranges = check_input_format(x_ranges)
 
     peaks_positions = []
-    popts = []
+    gauss_popts = []
+    gauss_errors = []
     for i in range(len(ys)):  # the i-th data set for y-axis
         current_y = ys[i]
         plt.plot(x, current_y, linewidth = 0.6)  # the lines
@@ -432,7 +438,8 @@ def fit_gaussian_full(x, ys, x_ranges):
         #                                 x_ranges)
 
         current_peaks = []  # peaks for a line
-        current_popts = []  # parameters of gaussian for a line
+        current_gauss_popts = []  # parameters of gaussian for a line
+        current_gauss_errors = []
         for x_range in x_ranges:  
             peak_index, _ = find_interval_peak(x, current_y, x_range)
             peak_x = x[peak_index]
@@ -443,28 +450,31 @@ def fit_gaussian_full(x, ys, x_ranges):
 
             if len(peak_index) == 0: # no peak
                 current_peak.append(-1)
-                current_popts.append([-1, -1, -1])
+                current_gauss_popts.append([-1, -1, -1])
+                current_gauss_errors.append([-1, -1, -1])
             else:
                 current_peak.append(peak_x[0])
                 current_peak.append(peak_y[0])
 
-                popt, gaussian_result = fit_gaussian(x, current_y, x_range)
-                current_popts.append(popt)
+                popt, error, gaussian_result = fit_gaussian(x, current_y, x_range)
+                current_gauss_popts.append(popt)
+                current_gauss_errors.append(error)
                 plt.plot(gaussian_result[0], gaussian_result[1], linewidth = 0.8, linestyle = '--')
             current_peaks.append(current_peak)
 
         peaks_positions.append(current_peaks)
-        popts.append(current_popts)
+        gauss_popts.append(current_gauss_popts)
+        gauss_errors.append(current_gauss_errors)
 
     plt.xlabel('2-theta') 
     plt.ylabel('Intensity') 
     plt.show()
 
-    print_all(peaks_positions, popts, x_ranges)
+    print_curve_fit(peaks_positions, gauss_popts, gauss_errors, x_ranges)
 
 
 # 改注释
-def print_all(peaks_positions, popts, x_ranges):
+def print_curve_fit(peaks_positions, popts, errors, x_ranges):
     """ Print positions for peaks in an interval. 
     
     Inputs: 
@@ -481,11 +491,10 @@ def print_all(peaks_positions, popts, x_ranges):
             elif len(peaks_positions[i][j]) == 2:
                 print(f"\n{i}th data set: ")
                 print(f"peak position:{peaks_positions[i][j]}")
-                print(f"full width at half maximum intensity: {popts[i][j][2]}")
+                print(f"height = {'%.3f'%popts[i][j][0]} (+/-) {'%.3f'%errors[i][j][0]}")
+                print(f"center = {'%.3f'%popts[i][j][1]} (+/-) {'%.3f'%errors[i][j][1]}")
+                print(f"wideth = {'%.3f'%popts[i][j][2]} (+/-) {'%.3f'%errors[i][j][2]}")
 
         j += 1
 
 
-
-
-# 
