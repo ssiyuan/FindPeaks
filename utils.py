@@ -378,15 +378,15 @@ def plot_peaks_in_ranges(x, ys, x_ranges):
     print_peaks_positions(peaks_positions, x_ranges)
 
 
-def gaussian(x, height, center, sigma): 
+def gaussian(x, h, xc, w): 
     """ The function to fit the curve.
     Return the y values resulted from gaussian function. 
 
-    height: the height of the curve's peak
-    center: the position of the center of the peak
-    sigma: the width of the curve
+    h: the height of the curve's peak
+    xc: the position of the center of the peak
+    w: the width of the curve
     """
-    return height * np.exp(-(x-center)**2/(2*(sigma**2)))
+    return h * np.exp(-(x-xc)**2/(2*(w**2)))
 
 
 # 改备注 a test 找到一个范围的gaussian curve and print
@@ -491,10 +491,22 @@ def print_curve_fit(peaks_positions, popts, errors, x_ranges):
             elif len(peaks_positions[i][j]) == 2:
                 print(f"\n{i}th data set: ")
                 print(f"peak position:{peaks_positions[i][j]}")
-                print(f"height = {'%.3f'%popts[i][j][0]} (+/-) {'%.3f'%errors[i][j][0]}")
-                print(f"center = {'%.3f'%popts[i][j][1]} (+/-) {'%.3f'%errors[i][j][1]}")
-                print(f"wideth = {'%.3f'%popts[i][j][2]} (+/-) {'%.3f'%errors[i][j][2]}")
+                print(f"height = {'%.6f'%popts[i][j][0]} (+/-) {'%.6f'%errors[i][j][0]}")
+                print(f"center = {'%.6f'%popts[i][j][1]} (+/-) {'%.6f'%errors[i][j][1]}")
+                print(f"wideth = {'%.6f'%popts[i][j][2]} (+/-) {'%.6f'%errors[i][j][2]}")
 
         j += 1
 
+
+def lorentz(x, y0, xc, w, a): 
+    """ The function to fit the curve.
+    Return the y values resulted from Lorentz function. 
+
+    y0: offset
+    xc: the position of the center of the peak
+    w: the width of the curve
+    a: area of the curve
+    """
+    pi = math.pi
+    return y0 + (2*a/pi)*(w/(4*(x-xc)**2+w**2))
 
