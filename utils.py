@@ -496,7 +496,7 @@ def print_curve_fit(peaks_positions, popts, errors, x_ranges):
                 print(f"peak position:{peaks_positions[i][j]}")
                 print(f"height = {'%.6f'%popts[i][j][0]} (+/-) {'%.6f'%errors[i][j][0]}")
                 print(f"center = {'%.6f'%popts[i][j][1]} (+/-) {'%.6f'%errors[i][j][1]}")
-                print(f"wideth = {'%.6f'%popts[i][j][2]} (+/-) {'%.6f'%errors[i][j][2]}")
+                print(f"width = {'%.6f'%popts[i][j][2]} (+/-) {'%.6f'%errors[i][j][2]}")
                 if (len(popts[i][j])==4):
                     print(f"area = {'%.6f'%popts[i][j][3]} ")
 

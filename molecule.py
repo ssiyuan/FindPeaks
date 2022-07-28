@@ -26,7 +26,7 @@ def main():
     # plot_peaks_in_ranges(x, ys, [0.2, 0.29])
     # fit_gaussian(x, ys[0], [6.2, 6.5])  # original data
     fit_gaussian_full(x, ys, [[1.2, 2.5], [6, 7]]) 
-    # fit_lorentz_full(x, ys, [[6, 7]])
+    # fit_lorentz_full(x, ys, [[1.2, 2.5], [6, 7]])
     
 
 if __name__ == "__main__":
