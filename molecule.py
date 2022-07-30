@@ -10,7 +10,8 @@ from utils import (
     plot_peaks_in_ranges,
     fit_gaussian,
     fit_gaussian_full,
-    fit_lorentz_full)
+    fit_lorentz_full,
+    fit_lorentz)
 
 
 def main():
@@ -24,9 +25,9 @@ def main():
     # plot_maxes_in_range(x, ys, [1, 2.8])
     # plot_peaks_in_ranges(x, ys, [[1, 2.8], [6, 7]])
     # plot_peaks_in_ranges(x, ys, [0.2, 0.29])
-    # fit_gaussian(x, ys[0], [6.2, 6.5])  # original data
-    fit_gaussian_full(x, ys, [[1.2, 2.5], [6, 7]]) 
-    # fit_lorentz_full(x, ys, [[1.2, 2.5], [6, 7]])
+    fit_gaussian(x, ys[15], [1.2, 2.5])  # original data
+    # fit_gaussian_full(x, ys, [[1.2, 2.5]]) 
+    # fit_lorentz_full(x, ys, [[1.2, 2.5], [6.2, 6.5]])
     
 
 if __name__ == "__main__":
