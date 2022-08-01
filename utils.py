@@ -6,11 +6,12 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 
+from scipy import sparse
+from scipy.sparse.linalg import spsolve
 from scipy.signal import find_peaks
 from scipy.optimize import curve_fit
-from lmfit import Model
-from scipy.stats import pearson3
 from lmfit.models import GaussianModel, LorentzianModel, PseudoVoigtModel
+
 
 
 def read_molecule_data(file_path):
@@ -614,19 +615,21 @@ def get_interval_data(x, y, x_range):
 
 
 
-def new_try(x, y, x_range):
-    xx, yy = get_interval_data(x, y, x_range)
-
+# def new_try(x, y, x_range):
+    # xx, yy = get_interval_data(x, y, x_range)
+def fit_curve(x, y):
     mod = GaussianModel()
     # mod = LorentzianModel()
     # mod = PseudoVoigtModel()
-    pars = mod.guess(yy, x=xx)
+    pars = mod.guess(y, x=x)
 
-    out = mod.fit(yy, pars, x=xx)
-    plt.plot(xx, yy, '--', label='original data')
-    plt.plot(xx, out.best_fit+min(yy), '-', label='best fit')
-    plt.legend()
-    plt.show()
+    out = mod.fit(y, pars, x=x)
+    # plt.plot(xx, yy, '--', label='original data')
+    # plt.plot(xx, out.best_fit+min(yy), '-', label='best fit')
+    # plt.legend()
+    # plt.show()
+    return out.best_fit, out.result
+
 
 
 def zero_try(x, y, x_range):
@@ -636,16 +639,16 @@ def zero_try(x, y, x_range):
     mod = GaussianModel()
     # mod = LorentzianModel()
     # mod = PseudoVoigtModel()
-    # pars = mod.guess(yy, x=xx)
-    pars = mod.make_params(center=1.75, sigma=0.15)
+    pars = mod.guess(yy, x=xx)
+    # pars = mod.make_params(center=1.75, sigma=0.15)
 
     out = mod.fit(yy, pars, x=xx)
-    plt.plot(xx, y_interval, '--', label='original data')
-    plt.plot(xx, yy, ':', label='data with min as 0')
-    plt.plot(xx, out.best_fit+min(y_interval), '-', label='best fit')
-    plt.legend()
-    plt.show()
-    print(out.fit_report())
+    # plt.plot(xx, y_interval, '--', label='original data')
+    # plt.plot(xx, yy, ':', label='data with min as 0')
+    # plt.plot(xx, out.best_fit+min(y_interval), '-', label='best fit')
+    # plt.legend()
+    # plt.show()
+    # print(out.fit_report())
 
 
 def try_sets(x, ys, x_range):
@@ -653,6 +656,44 @@ def try_sets(x, ys, x_range):
         zero_try(x, ys[i], x_range)
 
 
-def try_baseline(x, y, x_range):
+
+
+# There is an algorithm called "Asymmetric Least Squares Smoothing" by P. Eilers and H. Boelens in 2005. The paper is free and you can find it on google.
+def baseline_als(y, lam, p, niter=10):
+    L = len(y)
+    D = sparse.csc_matrix(np.diff(np.eye(L), 2))
+    w = np.ones(L)
+    for i in range(niter):
+      W = sparse.spdiags(w, 0, L, L)
+      Z = W + lam * D.dot(D.transpose())
+      z = spsolve(Z, w*y)
+      w = p * (y > z) + (1-p) * (y < z)
+    return z
+
+
+def print_pars(fit_result):
+    for name, par in fit_result.params.items():
+        print(f"{name}: value={'%.6s'%par.value} +/- {'%.6s'%par.stderr} ")
+
+
+def plot_baseline(x, y, x_range, i):
     xx, yy = get_interval_data(x, y, x_range)
-    
+    baseline = baseline_als(yy, 10000, 0.01)
+    baseline_subtracted = yy - baseline
+    best_fit, fit_result = fit_curve(xx, baseline_subtracted)
+
+    plt.title(f"{i}-th dataset")
+    plt.plot(xx, yy, '--', label='original data')
+    plt.plot(xx, baseline, ':', label='baseline')
+    plt.plot(xx, baseline_subtracted, '.', label='subtracted baseline')
+    plt.plot(xx, best_fit, '-', label='fit curve')
+    plt.legend()
+    plt.show()
+
+    print_pars(fit_result)
+
+
+def plot_all(x, ys, x_range):
+    for i in range(len(ys)):
+        print(f"\n{i}th dataset: ")
+        plot_baseline(x, ys[i], x_range, i)

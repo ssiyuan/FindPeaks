@@ -12,7 +12,9 @@ from utils import (
     fit_gaussian_full,
     fit_lorentz_full,
     fit_lorentz,
-    try_sets)
+    try_sets,
+    plot_baseline,
+    plot_all)
 
 
 def main():
@@ -30,7 +32,9 @@ def main():
     # fit_gaussian_full(x, ys, [[1.2, 2.5]]) 
     # fit_lorentz_full(x, ys, [[1.2, 2.5], [6.2, 6.5]])
     # try_sets(x, ys, [6.2, 6.5])
-    try_sets(x, ys, [1.0, 3.0])
+    # try_sets(x, ys, [1.0, 3.0])
+    # plot_baseline(x, ys[14], [1.2, 2.5])
+    plot_all(x, ys, [1.0, 3.0])
     
 
 if __name__ == "__main__":
