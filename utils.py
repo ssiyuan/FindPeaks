@@ -8,6 +8,9 @@ import matplotlib.pyplot as plt
 
 from scipy.signal import find_peaks
 from scipy.optimize import curve_fit
+from lmfit import Model
+from scipy.stats import pearson3
+from lmfit.models import GaussianModel, LorentzianModel, PseudoVoigtModel
 
 
 def read_molecule_data(file_path):
@@ -378,7 +381,8 @@ def plot_peaks_in_ranges(x, ys, x_ranges):
     print_peaks_positions(peaks_positions, x_ranges)
 
 
-def gaussian(x, h, xc, w): 
+def gaussian(x, amp, cen, wid): 
+    # test: 检查是否是三位数组/list
     """ The function to fit the curve.
     Return the y values resulted from gaussian function. 
 
@@ -386,7 +390,7 @@ def gaussian(x, h, xc, w):
     xc: the position of the center of the peak
     w: the width of the curve
     """
-    return h/(w*(math.sqrt(2*math.pi))) * np.exp(-(x-xc)**2/(2*(w**2)))
+    return amp/(wid*(math.sqrt(2*math.pi))) * np.exp(-(x-cen)**2/(2*(wid**2)))
 
 
 # 改备注 a test 找到一个范围的gaussian curve and print
@@ -597,3 +601,59 @@ def fit_lorentz_full(x, ys, x_ranges):
     plt.show()
 
     print_curve_fit(peaks_positions, loren_popts, loren_errors, x_ranges)
+
+
+
+
+
+
+
+
+
+
+
+
+def new_try(x, y, x_range):
+    interval_indices = indices_in_interval(x, x_range)
+    xx = x[interval_indices]
+    yy = y[interval_indices]
+
+    mod = GaussianModel()
+    # mod = LorentzianModel()
+    # mod = PseudoVoigtModel()
+    pars = mod.guess(yy, x=xx)
+
+    out = mod.fit(yy, pars, x=xx)
+    plt.plot(xx, yy, '--', label='original data')
+    plt.plot(xx, out.best_fit+min(yy), '-', label='best fit')
+    plt.legend()
+    plt.show()
+
+
+def zero_try(x, y, x_range):
+    interval_indices = indices_in_interval(x, x_range)
+    xx = x[interval_indices]
+    y_interval = y[interval_indices]
+    yy = y_interval-min(y_interval)
+
+    mod = GaussianModel()
+    # mod = LorentzianModel()
+    # mod = PseudoVoigtModel()
+    # pars = mod.guess(yy, x=xx)
+    pars = mod.make_params(center=1.75, sigma=0.15)
+
+    out = mod.fit(yy, pars, x=xx)
+    plt.plot(xx, y_interval, '--', label='original data')
+    plt.plot(xx, yy, ':', label='data with min as 0')
+    plt.plot(xx, out.best_fit+min(y_interval), '-', label='best fit')
+    plt.legend()
+    plt.show()
+    print(out.fit_report())
+
+
+def try_sets(x, ys, x_range):
+    for i in range(len(ys)):
+        zero_try(x, ys[i], x_range)
+        # new_try(x,ys[i],x_range)
+
+

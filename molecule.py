@@ -11,7 +11,8 @@ from utils import (
     fit_gaussian,
     fit_gaussian_full,
     fit_lorentz_full,
-    fit_lorentz)
+    fit_lorentz,
+    try_sets)
 
 
 def main():
@@ -25,9 +26,11 @@ def main():
     # plot_maxes_in_range(x, ys, [1, 2.8])
     # plot_peaks_in_ranges(x, ys, [[1, 2.8], [6, 7]])
     # plot_peaks_in_ranges(x, ys, [0.2, 0.29])
-    fit_gaussian(x, ys[15], [1.2, 2.5])  # original data
+    # fit_gaussian(x, ys[15], [1.2, 2.5])  # original data
     # fit_gaussian_full(x, ys, [[1.2, 2.5]]) 
     # fit_lorentz_full(x, ys, [[1.2, 2.5], [6.2, 6.5]])
+    # try_sets(x, ys, [6.2, 6.5])
+    try_sets(x, ys, [1.0, 3.0])
     
 
 if __name__ == "__main__":
