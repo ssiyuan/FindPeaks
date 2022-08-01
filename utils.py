@@ -632,13 +632,11 @@ def fit_curve(x, y):
 
 
 
-def zero_try(x, y, x_range):
-    xx, y_interval = get_interval_data(x, y, x_range)
-    yy = y_interval-min(y_interval)
+def zero_try(xx, yy):
 
-    mod = GaussianModel()
+    # mod = GaussianModel()
     # mod = LorentzianModel()
-    # mod = PseudoVoigtModel()
+    mod = PseudoVoigtModel()
     pars = mod.guess(yy, x=xx)
     # pars = mod.make_params(center=1.75, sigma=0.15)
 
@@ -649,6 +647,7 @@ def zero_try(x, y, x_range):
     # plt.legend()
     # plt.show()
     # print(out.fit_report())
+    return out.best_fit, out.result
 
 
 def try_sets(x, ys, x_range):
@@ -664,10 +663,10 @@ def baseline_als(y, lam, p, niter=10):
     D = sparse.csc_matrix(np.diff(np.eye(L), 2))
     w = np.ones(L)
     for i in range(niter):
-      W = sparse.spdiags(w, 0, L, L)
-      Z = W + lam * D.dot(D.transpose())
-      z = spsolve(Z, w*y)
-      w = p * (y > z) + (1-p) * (y < z)
+        W = sparse.spdiags(w, 0, L, L)
+        Z = W + lam * D.dot(D.transpose())
+        z = spsolve(Z, w*y)
+        w = p * (y > z) + (1-p) * (y < z)
     return z
 
 
@@ -678,9 +677,14 @@ def print_pars(fit_result):
 
 def plot_baseline(x, y, x_range, i):
     xx, yy = get_interval_data(x, y, x_range)
+
     baseline = baseline_als(yy, 10000, 0.01)
     baseline_subtracted = yy - baseline
     best_fit, fit_result = fit_curve(xx, baseline_subtracted)
+
+    # baseline = min(yy)*np.ones(len(yy))
+    # baseline_subtracted = yy-baseline
+    # best_fit, fit_result = zero_try(xx, baseline_subtracted)
 
     plt.title(f"{i}-th dataset")
     plt.plot(xx, yy, '--', label='original data')

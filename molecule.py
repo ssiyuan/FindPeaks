@@ -34,7 +34,7 @@ def main():
     # try_sets(x, ys, [6.2, 6.5])
     # try_sets(x, ys, [1.0, 3.0])
     # plot_baseline(x, ys[14], [1.2, 2.5])
-    plot_all(x, ys, [1.0, 3.0])
+    plot_all(x, ys, [6.2, 6.5])
     
 
 if __name__ == "__main__":
