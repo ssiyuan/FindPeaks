@@ -59,7 +59,7 @@ def plot_initial_figure(x, ys):
     plt.show() 
 
 
-def indices_in_interval(x, x_range):
+def get_interval_indices(x, x_range):
     """ Return an array of indices, corresponding to the elements in the given 
     range.
 
@@ -81,7 +81,7 @@ def find_interval_max(x, y, x_range):
         x_range: 1-D list or array of 2 elements, the minimum and maximum of 
                  the range.
     """
-    interval_indices = indices_in_interval(x, x_range)
+    interval_indices = get_interval_indices(x, x_range)
     index_range_min = interval_indices[0]
     y_in_interval = y[interval_indices]
     temp_index = np.where(y_in_interval == np.max(y_in_interval))[0]
@@ -100,7 +100,7 @@ def find_interval_peak(x, y, x_range):
         x_range: 1-D list or array of 2 elements, the minimum and maximum of 
                  the range.
     """
-    interval_indices = indices_in_interval(x, x_range)
+    interval_indices = get_interval_indices(x, x_range)
     index_range_min = interval_indices[0]
     y_in_interval = y[interval_indices]
     temp_index, peak_property = find_peaks(y_in_interval, height=0.01, distance=100)
@@ -242,7 +242,7 @@ def plot_peaks(x, ys):
 
 
 
-def indices_in_intervals(x, x_ranges):
+def get_intervals_indices(x, x_ranges):
     """ Return a 2-D list of indices, corresponding to elements in the given 
     ranges. Each row is for an interval.
 
@@ -251,10 +251,10 @@ def indices_in_intervals(x, x_ranges):
         x_ranges: 2-D list or array of 2 columns, 1st col: the minimum of range
                                                 2nd col: maximum of range
     """
-    indices_in_intervals = []
+    indices = []
     for x_range in x_ranges:
-        indices_in_intervals.append(np.where((x>x_range[0]) & (x<x_range[1]))[0])
-    return indices_in_intervals
+        indices.append(get_interval_indices(x, x_range))
+    return indices
 
 
 # !!! to delete: 
@@ -268,7 +268,7 @@ def find_peaks_in_ranges(x, y, x_ranges):
         x_ranges: 2-D list or array of 2 columns, 1st col: the minimum of range
                                                 2nd col: maximum of range
     """
-    intervals_indices = indices_in_intervals(x, x_ranges)
+    intervals_indices = get_intervals_indices(x, x_ranges)
     peak_indices, peak_properties= [], []
     for interval_indices in intervals_indices: 
         index_range_min = interval_indices[0]
@@ -401,7 +401,7 @@ def fit_gaussian(x, y, x_range):
 #     x: 1-D array
 #     y: 1-D array
 #     """
-    interval_indices = indices_in_interval(x, x_range)
+    interval_indices = get_interval_indices(x, x_range)
     x_in_interval = x[interval_indices]
     y_in_interval = y[interval_indices]
     
@@ -532,7 +532,7 @@ def fit_lorentz(x, y, x_range):
 #     x: 1-D array
 #     y: 1-D array
 #     """
-    interval_indices = indices_in_interval(x, x_range)
+    interval_indices = get_interval_indices(x, x_range)
     x_in_interval = x[interval_indices]
     y_in_interval = y[interval_indices]
     
@@ -608,15 +608,14 @@ def fit_lorentz_full(x, ys, x_ranges):
 
 
 
-
-
+def get_interval_data(x, y, x_range):
+    interval_indices = get_interval_indices(x, x_range)
+    return x[interval_indices], y[interval_indices]
 
 
 
 def new_try(x, y, x_range):
-    interval_indices = indices_in_interval(x, x_range)
-    xx = x[interval_indices]
-    yy = y[interval_indices]
+    xx, yy = get_interval_data(x, y, x_range)
 
     mod = GaussianModel()
     # mod = LorentzianModel()
@@ -631,9 +630,7 @@ def new_try(x, y, x_range):
 
 
 def zero_try(x, y, x_range):
-    interval_indices = indices_in_interval(x, x_range)
-    xx = x[interval_indices]
-    y_interval = y[interval_indices]
+    xx, y_interval = get_interval_data(x, y, x_range)
     yy = y_interval-min(y_interval)
 
     mod = GaussianModel()
@@ -654,6 +651,8 @@ def zero_try(x, y, x_range):
 def try_sets(x, ys, x_range):
     for i in range(len(ys)):
         zero_try(x, ys[i], x_range)
-        # new_try(x,ys[i],x_range)
 
 
+def try_baseline(x, y, x_range):
+    xx, yy = get_interval_data(x, y, x_range)
+    
