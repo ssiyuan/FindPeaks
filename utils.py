@@ -696,13 +696,13 @@ def plot_baseline(x, y, x_range, i):
     # baseline_subtracted = yy-baseline
     # best_fit, fit_result = zero_try(xx, baseline_subtracted)
 
-    # plt.title(f"{i}-th dataset")
-    # plt.plot(xx, yy, '--', label='original data')
-    # plt.plot(xx, baseline, ':', label='baseline')
-    # plt.plot(xx, baseline_subtracted, '.', label='subtracted baseline')
-    # plt.plot(xx, best_fit, '-', label='fit curve')
-    # plt.legend()
-    # plt.show()
+    plt.title(f"{i}-th dataset")
+    plt.plot(xx, yy, '--', label='original data')
+    plt.plot(xx, baseline, ':', label='baseline')
+    plt.plot(xx, baseline_subtracted, '.', label='subtracted baseline')
+    plt.plot(xx, best_fit, '-', label='fit curve')
+    plt.legend()
+    plt.show()
 
     pars = get_pars(fit_result)
     fwhm, height, center, area = process_pars(pars)
@@ -761,9 +761,9 @@ def plot_intensity(data):
 def tabulate_result(data):
     """output to a file"""
     output_data = np.array(data).transpose()  # same format as input file
-    header = ['TIME','FWHM','Intensity','PEAK POSITION','AREA']
+    header = ['TIME','FWHM','INTENSITY','PEAK POSITION (XC)','AREA']
 
-    with open('Output_Data/OutputResult.csv', 'w', ) as fp:
+    with open('Output_Data/Output_Result.csv', 'w', ) as fp:
         wr = csv.writer(fp, quoting=csv.QUOTE_ALL)
         wr.writerow(header)
         for line in output_data:
