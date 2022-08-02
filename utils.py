@@ -670,9 +670,19 @@ def baseline_als(y, lam, p, niter=10):
     return z
 
 
-def print_pars(fit_result):
+def get_pars(fit_result):
+    # amplitude, center, sigma, fwhm, height
+    pars = []
     for name, par in fit_result.params.items():
         print(f"{name}: value={'%.6s'%par.value} +/- {'%.6s'%par.stderr} ")
+        pars.append(float(par.value))
+    return pars
+
+
+def process_pars(pars):
+    _, center, _, fwhm, height = pars
+    area = fwhm * height
+    return fwhm, height, center, area
 
 
 def plot_baseline(x, y, x_range, i):
@@ -686,18 +696,76 @@ def plot_baseline(x, y, x_range, i):
     # baseline_subtracted = yy-baseline
     # best_fit, fit_result = zero_try(xx, baseline_subtracted)
 
-    plt.title(f"{i}-th dataset")
-    plt.plot(xx, yy, '--', label='original data')
-    plt.plot(xx, baseline, ':', label='baseline')
-    plt.plot(xx, baseline_subtracted, '.', label='subtracted baseline')
-    plt.plot(xx, best_fit, '-', label='fit curve')
-    plt.legend()
-    plt.show()
+    # plt.title(f"{i}-th dataset")
+    # plt.plot(xx, yy, '--', label='original data')
+    # plt.plot(xx, baseline, ':', label='baseline')
+    # plt.plot(xx, baseline_subtracted, '.', label='subtracted baseline')
+    # plt.plot(xx, best_fit, '-', label='fit curve')
+    # plt.legend()
+    # plt.show()
 
-    print_pars(fit_result)
+    pars = get_pars(fit_result)
+    fwhm, height, center, area = process_pars(pars)
+    return fwhm, height, center, area
 
 
-def plot_all(x, ys, x_range):
+def summarize_result(x, ys, x_range):
+    time = np.arange(0, 170, 10)
+    fwhm_s = []
+    intensities = []
+    peak_positions = []
+    areas = []
+
     for i in range(len(ys)):
         print(f"\n{i}th dataset: ")
-        plot_baseline(x, ys[i], x_range, i)
+        fwhm, height, center, area = plot_baseline(x, ys[i], x_range, i)
+
+        fwhm_s.append('%.6f'%fwhm)
+        intensities.append('%.6f'%height)
+        peak_positions.append('%.6f'%center)
+        # peak_positions.append([center, height])
+        areas.append('%.6f'%area)
+
+    data = summary_data(time, fwhm_s, intensities, peak_positions, areas)
+    return data
+
+
+def summary_data(time, fwhm_s, intensities, peak_positions, areas):
+    """summarize"""
+    data = []
+    data.append(time)
+    data.append(fwhm_s)
+    data.append(intensities)
+    data.append(peak_positions)
+    data.append(areas)
+    data_arr = np.array(data)
+    return data_arr.astype(np.float32)
+
+
+def plot_fwhm(data):
+    plt.title("Changes in FXHM")
+    plt.plot(data[0], data[1], 'o-')
+    plt.xlabel('Time (min)') 
+    plt.ylabel('Full Width at Half Maximum')
+    plt.show()
+
+
+def plot_intensity(data):
+    plt.title("Changes in Intensity")
+    plt.plot(data[0], data[2], 'o-')
+    plt.xlabel('Time (min)') 
+    plt.ylabel('Intensity')
+    plt.show()
+
+
+def tabulate_result(data):
+    """output to a file"""
+    output_data = np.array(data).transpose()  # same format as input file
+    header = ['TIME','FWHM','Intensity','PEAK POSITION','AREA']
+
+    with open('Output_Data/OutputResult.csv', 'w', ) as fp:
+        wr = csv.writer(fp, quoting=csv.QUOTE_ALL)
+        wr.writerow(header)
+        for line in output_data:
+            wr.writerow(line)
+    
