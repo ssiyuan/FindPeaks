@@ -744,7 +744,7 @@ def summary_data(time, fwhm_s, intensities, peak_positions, areas):
 
 def plot_fwhm(data):
     plt.title("Changes in FXHM")
-    plt.plot(data[0], data[1], 'o-')
+    plt.plot(data[0][3:], data[1][3:], 'o-')
     plt.xlabel('Time (min)') 
     plt.ylabel('Full Width at Half Maximum')
     plt.show()
@@ -752,7 +752,7 @@ def plot_fwhm(data):
 
 def plot_intensity(data):
     plt.title("Changes in Intensity")
-    plt.plot(data[0], data[2], 'o-')
+    plt.plot(data[0][3:], data[2][3:], 'o-')
     plt.xlabel('Time (min)') 
     plt.ylabel('Intensity')
     plt.show()
