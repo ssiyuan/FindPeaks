@@ -682,6 +682,7 @@ def check_float(str):
 
 
 def get_pars(fit_result):
+    """Get results data and print them. """
     # amplitude, center, sigma, fwhm, height
     value = []
     std_err = []
@@ -693,6 +694,9 @@ def get_pars(fit_result):
 
 
 def plot_baseline(x, y, x_range, i):
+    """1. Fit curve with result after subtracting baseline. 
+    2. Plot results. 
+    """
     xx, yy = get_interval_data(x, y, x_range)
 
     baseline = baseline_als(yy, 10000, 0.01)
@@ -705,12 +709,10 @@ def plot_baseline(x, y, x_range, i):
     plt.plot(xx, baseline_subtracted, '.', label='subtracted baseline')
     plt.plot(xx, best_fit, '-', label='fit curve')
     plt.legend()
+    plt.savefig('Resulted_Figures/Dataset_{}.png'.format(i))
     plt.show()
 
-    pars_value, pars_stderr = get_pars(fit_result)
-    # fwhm, height, center, area = process_pars(pars_value)
-    # return fwhm, height, center, area
-    return pars_value, pars_stderr
+    return fit_result
 
 
 def summarize_result(x, ys, x_range):
@@ -727,8 +729,11 @@ def summarize_result(x, ys, x_range):
 
     for i in range(len(ys)):
         print(f"\n{i}th dataset: ")
-        pars_value, pars_stderr = plot_baseline(x, ys[i], x_range, i)
         data[0][i] = i*10
+
+        fit_result = plot_baseline(x, ys[i], x_range, i)
+        pars_value, pars_stderr = get_pars(fit_result)
+        
         for j in range(5):
             data[2*(j+1)-1][i] = float(pars_value[j])
             data[2*(j+1)][i] = float(pars_stderr[j])
@@ -737,23 +742,31 @@ def summarize_result(x, ys, x_range):
 
 
 def plot_fwhm(data):
+    """Plot the figure showing changes in FXHM. """
     plt.title("Changes in FXHM")
-    plt.plot(data[0][3:], data[7][3:], 'o-')
+    plt.plot(data[0][3:],data[7][3:],'sienna',linewidth=1.0)
+    plt.errorbar(data[0][3:],data[7][3:],yerr=data[8][3:],fmt='o',ecolor='k',\
+        color='mediumseagreen',elinewidth=1,capsize=1)
     plt.xlabel('Time (min)') 
     plt.ylabel('Full Width at Half Maximum')
+    plt.savefig('Resulted_Figures/Changes_In_FXHM.png')
     plt.show()
 
 
 def plot_intensity(data):
+    """Plot the figure showing changes in Intendity. """
     plt.title("Changes in Intensity")
-    plt.plot(data[0][3:], data[9][3:], 'o-')
+    plt.plot(data[0][3:],data[9][3:],'sienna',linewidth=1.0)
+    plt.errorbar(data[0][3:],data[9][3:],yerr=data[10][3:],fmt='o',ecolor='k',\
+        color='mediumseagreen',elinewidth=1,capsize=1)
     plt.xlabel('Time (min)') 
     plt.ylabel('Intensity')
+    plt.savefig('Resulted_Figures/Changes_In_Intensity.png')
     plt.show()
 
 
 def tabulate_result(data):
-    """output to a file"""
+    """Output data to a .csv file. """
     output_data = np.array(data).transpose()  # same format as input file
     header = ['TIME','AMPLITUDE','STD_ERR','CENTER','STD_ERR','SIGMA',\
         'STD_ERR','FWHM','STD_ERR','HEIGHT','STD_ERR']
