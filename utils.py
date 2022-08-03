@@ -10,6 +10,7 @@ from scipy import sparse
 from scipy.sparse.linalg import spsolve
 from scipy.signal import find_peaks
 from scipy.optimize import curve_fit
+from mpl_toolkits.mplot3d import axes3d
 from lmfit.models import GaussianModel, LorentzianModel, PseudoVoigtModel
 
 
@@ -45,7 +46,7 @@ def separate_data(data):
     return x, ys
 
 
-def plot_initial_figure(x, ys):
+def plot_initial_2d(x, ys):
     """ Draw a figure for the data read from file. 
 
     Inputs:
@@ -58,6 +59,19 @@ def plot_initial_figure(x, ys):
     plt.xlabel('2-theta') 
     plt.ylabel('Intensity')
     plt.show() 
+
+
+def plot_initial_3d(x, ys):
+    """Plot original data (3d version)"""
+    ax = plt.axes(projection='3d')
+    for i in range(len(ys)):
+        z = np.ones(len(ys[0]))*10*i  # time = dataset_index * 10 
+        ax.plot3D(x[40:],z[40:],ys[i][40:],c='black')
+    ax.set_zlim(0, 0.14)
+    ax.set_xlabel('q ($nm^{-1}$)')
+    ax.set_ylabel('Time (min)')
+    ax.set_zlabel('Intensity ($cm^{-1}$)')
+    plt.show()
 
 
 def get_interval_indices(x, x_range):
@@ -780,6 +794,14 @@ def tabulate_result(data):
         wr.writerow([' ','(  0.0 in STD_ERR means',' NoneType.  )'])
 
 
-def plot_3d(data):
+def plot_3d(x, ys):
     """Plot original data (3d version)"""
-    return 0
+    ax = plt.axes(projection='3d')
+    for i in range(len(ys)):
+        z = np.ones(len(ys[0]))*10*i  # time = dataset_index * 10 
+        ax.plot3D(x[55:],z[55:],ys[i][55:])
+        # plt.loglog(x, ys[i], linewidth = 0.6)
+    ax.set_xlabel('q ($nm^{-1}$)')
+    ax.set_ylabel('Time (min)')
+    ax.set_zlabel('Intensity ($cm^{-1}$)')
+    plt.show()
