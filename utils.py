@@ -104,7 +104,7 @@ def find_interval_peak(x, y, x_range):
     interval_indices = get_interval_indices(x, x_range)
     index_range_min = interval_indices[0]
     y_in_interval = y[interval_indices]
-    temp_index, peak_property = find_peaks(y_in_interval, height=0.01, distance=100)
+    temp_index, peak_property = find_peaks(y_in_interval, height=0.01, distance=10)
     peak_index = index_range_min + temp_index
     return peak_index, peak_property
 
@@ -670,19 +670,26 @@ def baseline_als(y, lam, p, niter=10):
     return z
 
 
+def check_float(str):
+    """Check if the input string is a float or just string. 
+    True if float.
+    """
+    try:
+        f = float(str)
+        return f
+    except TypeError:
+        return 0
+
+
 def get_pars(fit_result):
     # amplitude, center, sigma, fwhm, height
-    pars = []
+    value = []
+    std_err = []
     for name, par in fit_result.params.items():
-        print(f"{name}: value={'%.6s'%par.value} +/- {'%.6s'%par.stderr} ")
-        pars.append(float(par.value))
-    return pars
-
-
-def process_pars(pars):
-    _, center, _, fwhm, height = pars
-    area = fwhm * height
-    return fwhm, height, center, area
+        print(f"{name}: value={'%.6f'%float(par.value)} +/- {par.stderr} ")
+        value.append(float(par.value))
+        std_err.append(check_float(par.stderr))
+    return np.array(value), np.array(std_err)
 
 
 def plot_baseline(x, y, x_range, i):
@@ -692,10 +699,6 @@ def plot_baseline(x, y, x_range, i):
     baseline_subtracted = yy - baseline
     best_fit, fit_result = fit_curve(xx, baseline_subtracted)
 
-    # baseline = min(yy)*np.ones(len(yy))
-    # baseline_subtracted = yy-baseline
-    # best_fit, fit_result = zero_try(xx, baseline_subtracted)
-
     plt.title(f"{i}-th dataset")
     plt.plot(xx, yy, '--', label='original data')
     plt.plot(xx, baseline, ':', label='baseline')
@@ -704,47 +707,38 @@ def plot_baseline(x, y, x_range, i):
     plt.legend()
     plt.show()
 
-    pars = get_pars(fit_result)
-    fwhm, height, center, area = process_pars(pars)
-    return fwhm, height, center, area
+    pars_value, pars_stderr = get_pars(fit_result)
+    # fwhm, height, center, area = process_pars(pars_value)
+    # return fwhm, height, center, area
+    return pars_value, pars_stderr
 
 
 def summarize_result(x, ys, x_range):
-    time = np.arange(0, 170, 10)
-    fwhm_s = []
-    intensities = []
-    peak_positions = []
-    areas = []
+    """Summerize the result of fitting into an array. 
+    
+    1. First row (data[0]): time for each data sets 
+    2. For the remaining rows regarding parameters: 
+    one row for value and its following row for standard error. 
+    e.g. data[1] for amplitude, data[2] for error of amplitude
+         data[3] for center, data[4] for error of center
+         ...
+    """
+    data = np.zeros((11, len(ys)))  # time + pars_value + pars_stderr
 
     for i in range(len(ys)):
         print(f"\n{i}th dataset: ")
-        fwhm, height, center, area = plot_baseline(x, ys[i], x_range, i)
+        pars_value, pars_stderr = plot_baseline(x, ys[i], x_range, i)
+        data[0][i] = i*10
+        for j in range(5):
+            data[2*(j+1)-1][i] = float(pars_value[j])
+            data[2*(j+1)][i] = float(pars_stderr[j])
 
-        fwhm_s.append('%.6f'%fwhm)
-        intensities.append('%.6f'%height)
-        peak_positions.append('%.6f'%center)
-        # peak_positions.append([center, height])
-        areas.append('%.6f'%area)
-
-    data = summary_data(time, fwhm_s, intensities, peak_positions, areas)
     return data
-
-
-def summary_data(time, fwhm_s, intensities, peak_positions, areas):
-    """summarize"""
-    data = []
-    data.append(time)
-    data.append(fwhm_s)
-    data.append(intensities)
-    data.append(peak_positions)
-    data.append(areas)
-    data_arr = np.array(data)
-    return data_arr.astype(np.float32)
 
 
 def plot_fwhm(data):
     plt.title("Changes in FXHM")
-    plt.plot(data[0][3:], data[1][3:], 'o-')
+    plt.plot(data[0][3:], data[7][3:], 'o-')
     plt.xlabel('Time (min)') 
     plt.ylabel('Full Width at Half Maximum')
     plt.show()
@@ -752,7 +746,7 @@ def plot_fwhm(data):
 
 def plot_intensity(data):
     plt.title("Changes in Intensity")
-    plt.plot(data[0][3:], data[2][3:], 'o-')
+    plt.plot(data[0][3:], data[9][3:], 'o-')
     plt.xlabel('Time (min)') 
     plt.ylabel('Intensity')
     plt.show()
@@ -761,11 +755,18 @@ def plot_intensity(data):
 def tabulate_result(data):
     """output to a file"""
     output_data = np.array(data).transpose()  # same format as input file
-    header = ['TIME','FWHM','INTENSITY','PEAK POSITION (XC)','AREA']
+    header = ['TIME','AMPLITUDE','STD_ERR','CENTER','STD_ERR','SIGMA',\
+        'STD_ERR','FWHM','STD_ERR','HEIGHT','STD_ERR']
 
     with open('Output_Data/Output_Result.csv', 'w', ) as fp:
         wr = csv.writer(fp, quoting=csv.QUOTE_ALL)
         wr.writerow(header)
         for line in output_data:
             wr.writerow(line)
-    
+        wr.writerow([ ])
+        wr.writerow([' ','(  0.0 in STD_ERR means',' NoneType.  )'])
+
+
+def plot_3d(data):
+    """Plot original data (3d version)"""
+    return 0
