@@ -58,6 +58,7 @@ def plot_initial_2d(x, ys):
         # plt.loglog(x, ys[i], linewidth = 0.6)
     plt.xlabel('2-theta') 
     plt.ylabel('Intensity')
+    plt.savefig('Resulted_Figures/Initial_2d.png')
     plt.show() 
 
 
@@ -71,6 +72,7 @@ def plot_initial_3d(x, ys):
     ax.set_xlabel('q ($nm^{-1}$)')
     ax.set_ylabel('Time (min)')
     ax.set_zlabel('Intensity ($cm^{-1}$)')
+    plt.savefig('Resulted_Figures/Initial_3d.png')
     plt.show()
 
 
