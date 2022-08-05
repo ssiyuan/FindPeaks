@@ -13,9 +13,9 @@ from utils import (
     fit_gaussian_full,
     fit_lorentz_full,
     fit_lorentz,
-    try_sets,
     summarize_data3D,
-    summarize_peaks)
+    summarize_peaks,
+    summarize_comparison)
 
 
 def main():
@@ -36,8 +36,9 @@ def main():
     # # try_sets(x, ys, [6.2, 6.5])
     # # try_sets(x, ys, [1.0, 3.0])
     # # plot_baseline(x, ys[14], [1.2, 2.5])
-    data_3d = summarize_data3D(x,ys,[1.2, 6.5],2)
-    summarize_peaks(data_3d)
+    # data_3d = summarize_data3D(x,ys,[1.2, 6.5],2)
+    # summarize_peaks(data_3d)
+    summarize_comparison(x, ys[11], [1.2, 6.5])
 
     
 

@@ -625,13 +625,8 @@ def get_interval_data(x, y, x_range):
     return x[interval_indices], y[interval_indices]
 
 
-
-# def new_try(x, y, x_range):
-    # xx, yy = get_interval_data(x, y, x_range)
 def fit_curve_gauss(x, y):
     gauss1 = GaussianModel(prefix='g1_')
-    # mod = LorentzianModel()
-    # mod = PseudoVoigtModel()
     pars = gauss1.guess(y, x=x)
     pars['g1_center'].set(value=6.35)
     pars['g1_sigma'].set(value=0.038)
@@ -643,12 +638,43 @@ def fit_curve_gauss(x, y):
     pars['g2_amplitude'].set(value=0.003, min = 0)
 
     mod = gauss1 + gauss2
-
     out = mod.fit(y, pars, x=x)
-    # plt.plot(xx, yy, '--', label='original data')
-    # plt.plot(xx, out.best_fit+min(yy), '-', label='best fit')
-    # plt.legend()
-    # plt.show()
+    return out.best_fit, out.result
+
+
+def fit_curve_loren(x, y):
+    loren1 = LorentzianModel(prefix='l1_')
+    # mod = PseudoVoigtModel()
+    pars = loren1.guess(y, x=x)
+    pars['l1_center'].set(value=6.35)
+    pars['l1_sigma'].set(value=0.038)
+    pars['l1_amplitude'].set(value=0.00934)
+    loren2 = LorentzianModel(prefix='l2_')
+    pars.update(loren2.make_params())
+    pars['l2_center'].set(value=1.8, min = 1.7)
+    pars['l2_sigma'].set(value=0.2)
+    pars['l2_amplitude'].set(value=0.003, min = 0)
+
+    mod = loren1 + loren2
+    out = mod.fit(y, pars, x=x)
+    return out.best_fit, out.result
+
+
+def fit_curve_voigt(x, y):
+    pseu1 = PseudoVoigtModel(prefix='pv1_')
+    # mod = PseudoVoigtModel()
+    pars = pseu1.guess(y, x=x)
+    pars['pv1_center'].set(value=6.35)
+    pars['pv1_sigma'].set(value=0.038)
+    pars['pv1_amplitude'].set(value=0.00934)
+    pseu2 = PseudoVoigtModel(prefix='pv2_')
+    pars.update(pseu2.make_params())
+    pars['pv2_center'].set(value=1.8, min = 1.7)
+    pars['pv2_sigma'].set(value=0.2)
+    pars['pv2_amplitude'].set(value=0.003, min = 0)
+
+    mod = pseu1 + pseu2
+    out = mod.fit(y, pars, x=x)
     return out.best_fit, out.result
 
 
@@ -810,3 +836,42 @@ def summarize_peaks(data_3d):
         tabulate_result(data_3d[i], i)
 
 
+def compare_models(x, y):
+    """Compare 3 models with a figure. """
+    baseline = baseline_als(y, 10000, 0.01)
+    baseline_subtracted = y - baseline
+    best_fit_gauss, _ = fit_curve_gauss(x, baseline_subtracted)
+    best_fit_loren, _ = fit_curve_loren(x, baseline_subtracted)
+    best_fit_voigt, _ = fit_curve_voigt(x, baseline_subtracted)
+
+    result_gauss = best_fit_gauss + baseline
+    result_loren = best_fit_loren + baseline
+    result_voigt = best_fit_voigt + baseline
+
+    plt.title(f"Comparison Between Models")
+    plt.plot(x, y, '--', c='k', label='Original Data')
+    plt.plot(x, result_gauss, '-', label='Gaussian')
+    plt.plot(x, result_loren, '-', label='Lorentzian')
+    plt.plot(x, result_voigt, '-', label='Pseudo-Voigt')
+    plt.legend()
+    plt.savefig('Resulted_Figures/Comparison.png')
+    plt.show()
+
+    return result_gauss, result_loren, result_voigt
+
+def summarize_comparison(x, y, x_range):
+    xx, yy = get_interval_data(x, y, x_range)
+    result_gauss, result_loren, result_voigt = compare_models(xx, yy)
+    data_2d = np.zeros((5, len(xx)))  # time + pars_value + pars_stderr
+    data_2d[0] = xx
+    data_2d[1] = yy
+    data_2d[2] = result_gauss
+    data_2d[3] = result_loren
+    data_2d[4] = result_voigt
+
+    header = ['X', 'Y_Original', 'Y_Gaussian', 'Y_Lorentzian', 'Y_Pseudo_Voigt']
+    with open('Output_Data/Comparison.csv', 'w', ) as fp:
+        wr = csv.writer(fp, quoting=csv.QUOTE_ALL)
+        wr.writerow(header)
+        for line in np.array(data_2d).transpose():
+            wr.writerow(np.around(line, 6))
