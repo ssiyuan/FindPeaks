@@ -847,17 +847,37 @@ def compare_models(x, y):
     result_gauss = best_fit_gauss + baseline
     result_loren = best_fit_loren + baseline
     result_voigt = best_fit_voigt + baseline
+    return result_gauss, result_loren, result_voigt
 
-    plt.title(f"Comparison Between Models")
+
+def plot_gaussian_result(x, y, result_gauss):
+    plt.title(f"Gaussian Result")
     plt.plot(x, y, '--', c='k', label='Original Data')
     plt.plot(x, result_gauss, '-', label='Gaussian')
-    plt.plot(x, result_loren, '-', label='Lorentzian')
-    plt.plot(x, result_voigt, '-', label='Pseudo-Voigt')
+    plt.plot(x, abs(result_gauss-y), '-', label='error')
     plt.legend()
-    plt.savefig('Resulted_Figures/Comparison.png')
+    plt.savefig('Resulted_Figures/Comparison_Gaussian.png')
     plt.show()
 
-    return result_gauss, result_loren, result_voigt
+
+def plot_lorentzian_result(x, y, result_loren):
+    plt.title(f"Lorentzian Result")
+    plt.plot(x, y, '--', c='k', label='Original Data')
+    plt.plot(x, result_loren, '-', label='Lorentzian')
+    plt.plot(x, abs(result_loren-y), '-', label='error')
+    plt.legend()
+    plt.savefig('Resulted_Figures/Comparison_Lorentzian.png')
+    plt.show()
+
+
+def plot_pseudo_voigt_result(x, y, result_voigt):
+    plt.title(f"Pseudo-Voigt Result")
+    plt.plot(x, y, '--', c='k', label='Original Data')
+    plt.plot(x, result_voigt, '-', label='Pseudo-Voigt')
+    plt.plot(x, abs(result_voigt-y), '-', label='Pseudo-Voigt')
+    plt.legend()
+    plt.savefig('Resulted_Figures/Comparison_Pseudo_Voigt.png')
+    plt.show()
 
 
 def tabulate_comparison(data_2d):
@@ -896,4 +916,6 @@ def summarize_comparison(x, y, x_range):
 
     tabulate_comparison(data_2d)
     fit_index(data_2d)
-
+    plot_gaussian_result(xx, yy, result_gauss)
+    plot_lorentzian_result(xx, yy, result_loren)
+    plot_pseudo_voigt_result(xx, yy, result_voigt)
