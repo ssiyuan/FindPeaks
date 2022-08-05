@@ -781,7 +781,7 @@ def plot_fwhm(data_2d, i):
             len(ys) --> number of data sets
     i: the index of peak, min as 0. Imported to name picture file.
     """
-    plt.title("Changes in FXHM")
+    plt.title("Peak {} - Changes in FXHM".format(i+1))
     plt.plot(data_2d[0],data_2d[7],'sienna',linewidth=1.0)
     plt.errorbar(data_2d[0],data_2d[7],yerr=data_2d[8],fmt='o',\
         ecolor='k',color='mediumseagreen',elinewidth=1,capsize=1)
@@ -798,7 +798,7 @@ def plot_intensity(data_2d, i):
             len(ys) --> number of data sets
     i: the index of peak, min as 0. Imported to name picture file.
     """
-    plt.title("Changes in Intensity")
+    plt.title("Peak {} - Changes in Intensity".format(i+1))
     plt.plot(data_2d[0],data_2d[9],'sienna',linewidth=1.0)
     plt.errorbar(data_2d[0],data_2d[9],yerr=data_2d[10],fmt='o',\
         ecolor='k',color='mediumseagreen',elinewidth=1,capsize=1)
@@ -838,6 +838,6 @@ def summarize_peaks(data_3d):
     2nd dimension: the index of corresponding parameter
     3rd dimension: the index of current dataset"""
     for i in range(len(data_3d)):
-        plot_fwhm(data_3d[i])
-        plot_intensity(data_3d[i])
-        tabulate_result(data_3d[i])
+        plot_fwhm(data_3d[i], i)
+        plot_intensity(data_3d[i], i)
+        tabulate_result(data_3d[i], i)
