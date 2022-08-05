@@ -442,11 +442,6 @@ def fit_gaussian(x, y, x_range):
     return np.array(whole_popt), error, gaussian_result
 
 
-# def check_peak(x, current_y, x_range):
-
-    
-
-
 # 对于要求找peak的所有地方，找到peak以及对应的高斯曲线
 def fit_gaussian_full(x, ys, x_ranges):
 
@@ -633,7 +628,7 @@ def get_interval_data(x, y, x_range):
 
 # def new_try(x, y, x_range):
     # xx, yy = get_interval_data(x, y, x_range)
-def fit_curve(x, y):
+def fit_curve_gauss(x, y):
     gauss1 = GaussianModel(prefix='g1_')
     # mod = LorentzianModel()
     # mod = PseudoVoigtModel()
@@ -646,8 +641,6 @@ def fit_curve(x, y):
     pars['g2_center'].set(value=1.8, min = 1.7)
     pars['g2_sigma'].set(value=0.2)
     pars['g2_amplitude'].set(value=0.003, min = 0)
-    # gauss3 = GaussianModel(prefix='g3_')
-    # pars.update(gauss3.make_params())
 
     mod = gauss1 + gauss2
 
@@ -657,32 +650,6 @@ def fit_curve(x, y):
     # plt.legend()
     # plt.show()
     return out.best_fit, out.result
-
-
-
-def zero_try(xx, yy):
-
-    # mod = GaussianModel()
-    # mod = LorentzianModel()
-    mod = PseudoVoigtModel()
-    pars = mod.guess(yy, x=xx)
-    # pars = mod.make_params(center=1.75, sigma=0.15)
-
-    out = mod.fit(yy, pars, x=xx)
-    # plt.plot(xx, y_interval, '--', label='original data')
-    # plt.plot(xx, yy, ':', label='data with min as 0')
-    # plt.plot(xx, out.best_fit+min(y_interval), '-', label='best fit')
-    # plt.legend()
-    # plt.show()
-    # print(out.fit_report())
-    return out.best_fit, out.result
-
-
-def try_sets(x, ys, x_range):
-    for i in range(len(ys)):
-        zero_try(x, ys[i], x_range)
-
-
 
 
 # There is an algorithm called "Asymmetric Least Squares Smoothing" by P. Eilers and H. Boelens in 2005. The paper is free and you can find it on google.
@@ -729,7 +696,7 @@ def fit_curve_with_baseline(x, y, x_range, i):
 
     baseline = baseline_als(yy, 10000, 0.01)
     baseline_subtracted = yy - baseline
-    best_fit, fit_result = fit_curve(xx, baseline_subtracted)
+    best_fit, fit_result = fit_curve_gauss(xx, baseline_subtracted)
 
     # plt.title(f"{i}-th dataset")
     # plt.plot(xx, yy, '--', label='original data')
@@ -819,7 +786,7 @@ def tabulate_result(data_2d, i):
     header = ['TIME','AMPLITUDE','STD_ERR','CENTER','STD_ERR','SIGMA',\
         'STD_ERR','FWHM','STD_ERR','HEIGHT','STD_ERR']
 
-    with open('Output_Data/Peak{}_Result.csv'.format(i+1), 'w', ) as fp:
+    with open('Output_Data/Peak_{}_Result.csv'.format(i+1), 'w', ) as fp:
         wr = csv.writer(fp, quoting=csv.QUOTE_ALL)
         wr.writerow(header)
         for line in output_data:
@@ -841,3 +808,5 @@ def summarize_peaks(data_3d):
         plot_fwhm(data_3d[i], i)
         plot_intensity(data_3d[i], i)
         tabulate_result(data_3d[i], i)
+
+
