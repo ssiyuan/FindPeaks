@@ -10,8 +10,8 @@ from scipy import sparse
 from scipy.sparse.linalg import spsolve
 from scipy.signal import find_peaks
 from scipy.optimize import curve_fit
-from mpl_toolkits.mplot3d import axes3d
 from lmfit.models import GaussianModel, LorentzianModel, PseudoVoigtModel
+from lmfit.models import ExponentialModel
 
 
 
@@ -300,26 +300,6 @@ def find_peaks_in_ranges(x, y, x_ranges):
     return peak_indices, peak_properties
 
 
-# # 改注释
-# def print_peaks_positions(peaks_positions, x_ranges):
-#     """ Print positions for peaks in an interval. 
-    
-#     Inputs: 
-#         peaks_positions: 3-D array of 2 columns
-#         2-D list or array of 2 columns, 1st col: the minimum of range
-#                                                 2nd col: maximum of range
-#     """
-#     j = 0  # j: the j-th interval
-#     for x_range in x_ranges:
-#         print(f"\nIn interval [{x_range[0]}, {x_range[1]}]:")
-#         for i in range(len(peaks_positions)):  # i: the i-th set of data
-#             if len(peaks_positions[i][j]) == 1:  # element is -1: no value
-#                 print(f"{i}th set of data has no peak here.")
-#             elif len(peaks_positions[i][j]) == 2:
-#                 print(f"{i}th set of data has peak at: {peaks_positions[i][j]}.")
-#         j += 1
-
-
 # 改注释
 def print_peaks_positions(peaks_positions, x_ranges):
     """ Print positions for peaks in an interval. 
@@ -530,10 +510,6 @@ def lorentz(x, y0, xc, w, a):
     """
     pi = math.pi
     return y0 + (2*a/pi)*(w/(4*(x-xc)**2 + w**2))
-
-
-# def lorentz(x, amp1, wid1, cen1): 
-#     return amp1*wid1**2/((x-cen1)**2+wid1**2)
 
 
 # 改备注 a test 找到一个范围的lorentz curve and print
@@ -919,3 +895,4 @@ def summarize_comparison(x, y, x_range):
     plot_gaussian_result(xx, yy, result_gauss)
     plot_lorentzian_result(xx, yy, result_loren)
     plot_pseudo_voigt_result(xx, yy, result_voigt)
+
