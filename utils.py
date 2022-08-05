@@ -859,6 +859,31 @@ def compare_models(x, y):
 
     return result_gauss, result_loren, result_voigt
 
+
+def tabulate_comparison(data_2d):
+    header = ['X', 'Y_Original', 'Y_Gaussian', 'Y_Lorentzian', 'Y_Pseudo_Voigt']
+    with open('Output_Data/Comparison.csv', 'w', ) as fp:
+        wr = csv.writer(fp, quoting=csv.QUOTE_ALL)
+        wr.writerow(header)
+        for line in np.array(data_2d).transpose():
+            wr.writerow(np.around(line, 6))
+
+
+def fit_index(data_2d):
+    # Pearson's chi-square test
+    # https://en.wikipedia.org/wiki/Goodness_of_fit
+    fit_indices = np.zeros(3)
+    for i in range(3):
+        goodness = 0
+        for j in range(len(data_2d[0])):
+            goodness += (data_2d[i+2][j]-data_2d[1][j])**2 / data_2d[1][j]
+        fit_indices[i] = goodness
+    print(f"Fit index for Gaussian: {fit_indices[0]}")
+    print(f"Fit index for Lorentzian: {fit_indices[1]}")
+    print(f"Fit index for Pseudo-Voigt: {fit_indices[2]}")
+    return fit_indices
+
+
 def summarize_comparison(x, y, x_range):
     xx, yy = get_interval_data(x, y, x_range)
     result_gauss, result_loren, result_voigt = compare_models(xx, yy)
@@ -869,9 +894,6 @@ def summarize_comparison(x, y, x_range):
     data_2d[3] = result_loren
     data_2d[4] = result_voigt
 
-    header = ['X', 'Y_Original', 'Y_Gaussian', 'Y_Lorentzian', 'Y_Pseudo_Voigt']
-    with open('Output_Data/Comparison.csv', 'w', ) as fp:
-        wr = csv.writer(fp, quoting=csv.QUOTE_ALL)
-        wr.writerow(header)
-        for line in np.array(data_2d).transpose():
-            wr.writerow(np.around(line, 6))
+    tabulate_comparison(data_2d)
+    fit_index(data_2d)
+
