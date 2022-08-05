@@ -15,8 +15,7 @@ from utils import (
     fit_lorentz,
     summarize_data3D,
     summarize_peaks,
-    summarize_comparison,
-    try_exp)
+    summarize_comparison)
 
 
 def main():
@@ -39,8 +38,7 @@ def main():
     # plot_baseline(x, ys[14], [1.2, 2.5])
     # data_3d = summarize_data3D(x,ys,[1.2, 6.5],2)
     # summarize_peaks(data_3d)
-    # summarize_comparison(x, ys[11], [1.2, 6.5])
-    try_exp(x, ys[11], [1.2, 6.5])
+    summarize_comparison(x, ys[11], [1.2, 6.5])
 
     
 

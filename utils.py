@@ -11,8 +11,6 @@ from scipy.sparse.linalg import spsolve
 from scipy.signal import find_peaks
 from scipy.optimize import curve_fit
 from lmfit.models import GaussianModel, LorentzianModel, PseudoVoigtModel
-from lmfit.models import ExponentialModel
-
 
 
 def read_molecule_data(file_path):
