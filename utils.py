@@ -634,10 +634,22 @@ def get_interval_data(x, y, x_range):
 # def new_try(x, y, x_range):
     # xx, yy = get_interval_data(x, y, x_range)
 def fit_curve(x, y):
-    mod = GaussianModel()
+    gauss1 = GaussianModel(prefix='g1_')
     # mod = LorentzianModel()
     # mod = PseudoVoigtModel()
-    pars = mod.guess(y, x=x)
+    pars = gauss1.guess(y, x=x)
+    pars['g1_center'].set(value=6.35)
+    pars['g1_sigma'].set(value=0.038)
+    pars['g1_amplitude'].set(value=0.00934)
+    gauss2 = GaussianModel(prefix='g2_')
+    pars.update(gauss2.make_params())
+    pars['g2_center'].set(value=1.8, min = 1.7)
+    pars['g2_sigma'].set(value=0.2)
+    pars['g2_amplitude'].set(value=0.003, min = 0)
+    # gauss3 = GaussianModel(prefix='g3_')
+    # pars.update(gauss3.make_params())
+
+    mod = gauss1 + gauss2
 
     out = mod.fit(y, pars, x=x)
     # plt.plot(xx, yy, '--', label='original data')
@@ -709,7 +721,7 @@ def get_pars(fit_result):
     return np.array(value), np.array(std_err)
 
 
-def plot_baseline(x, y, x_range, i):
+def fit_curve_with_baseline(x, y, x_range, i):
     """1. Fit curve with result after subtracting baseline. 
     2. Plot results. 
     """
@@ -719,91 +731,113 @@ def plot_baseline(x, y, x_range, i):
     baseline_subtracted = yy - baseline
     best_fit, fit_result = fit_curve(xx, baseline_subtracted)
 
-    plt.title(f"{i}-th dataset")
-    plt.plot(xx, yy, '--', label='original data')
-    plt.plot(xx, baseline, ':', label='baseline')
-    plt.plot(xx, baseline_subtracted, '.', label='subtracted baseline')
-    plt.plot(xx, best_fit, '-', label='fit curve')
-    plt.legend()
-    plt.savefig('Resulted_Figures/Dataset_{}.png'.format(i))
-    plt.show()
+    # plt.title(f"{i}-th dataset")
+    # plt.plot(xx, yy, '--', label='original data')
+    # plt.plot(xx, baseline, ':', label='baseline')
+    # plt.plot(xx, baseline_subtracted, '.', label='subtracted baseline')
+    # plt.plot(xx, best_fit, '-', label='fit curve')
+    # plt.legend()
+    # plt.savefig('Resulted_Figures/Dataset_{}.png'.format(i))
+    # plt.show()
 
     return fit_result
 
 
-def summarize_result(x, ys, x_range):
-    """Summerize the result of fitting into an array. 
-    
-    1. First row (data[0]): time for each data sets 
-    2. For the remaining rows regarding parameters: 
-    one row for value and its following row for standard error. 
-    e.g. data[1] for amplitude, data[2] for error of amplitude
-         data[3] for center, data[4] for error of center
-         ...
-    """
-    data = np.zeros((11, len(ys)))  # time + pars_value + pars_stderr
+def summarize_data3D(x, ys, x_range, num):
+    """Summerize the fitting results into an array. 
+    x_range: interval limiting the range of peaks
+    num: number of peaks
 
+    The output:
+    a 3-d array of shape num * 11 * len(ys)
+    1st dimension: the index of peak focused on
+    2nd dimension: the index of corresponding parameter
+    3rd dimension: the index of current dataset
+
+    For the 2nd dimension, first element represents time. The elements with odd
+    index are different parameters, followed by an element describing the 
+    corresponding error.
+    """
+    # data = np.zeros((11, len(ys)*num+1))  # time + pars_value + pars_stderr
+    data_3d = np.zeros((num, 11, len(ys)))  # time + pars_value + pars_stderr
     for i in range(len(ys)):
         print(f"\n{i}th dataset: ")
-        data[0][i] = i*10
-
-        fit_result = plot_baseline(x, ys[i], x_range, i)
+        # data[0][i] = i*10
+        fit_result = fit_curve_with_baseline(x, ys[i], x_range, i)
         pars_value, pars_stderr = get_pars(fit_result)
-        
-        for j in range(5):
-            data[2*(j+1)-1][i] = float(pars_value[j])
-            data[2*(j+1)][i] = float(pars_stderr[j])
+        for j in range(num):
+            data_3d[j][0][i] = i*10
+            for k in range(5):
+                # store parameter values and their standard errors
+                data_3d[j][2*(k+1)-1][i] = '%.6f'%float(pars_value[k+j*5])
+                data_3d[j][2*(k+1)][i] = '%.6f'%float(pars_stderr[k+j*5])
+    return data_3d
 
-    return data
 
-
-def plot_fwhm(data):
-    """Plot the figure showing changes in FXHM. """
+def plot_fwhm(data_2d, i):
+    """Plot the figure showing changes in FXHM (for a peak).
+    data_2d: shape of 11 * len(ys)
+            11 --> number of parameter types
+            len(ys) --> number of data sets
+    i: the index of peak, min as 0. Imported to name picture file.
+    """
     plt.title("Changes in FXHM")
-    plt.plot(data[0][3:],data[7][3:],'sienna',linewidth=1.0)
-    plt.errorbar(data[0][3:],data[7][3:],yerr=data[8][3:],fmt='o',ecolor='k',\
-        color='mediumseagreen',elinewidth=1,capsize=1)
+    plt.plot(data_2d[0],data_2d[7],'sienna',linewidth=1.0)
+    plt.errorbar(data_2d[0],data_2d[7],yerr=data_2d[8],fmt='o',\
+        ecolor='k',color='mediumseagreen',elinewidth=1,capsize=1)
     plt.xlabel('Time (min)') 
     plt.ylabel('Full Width at Half Maximum')
-    plt.savefig('Resulted_Figures/Changes_In_FXHM.png')
+    plt.savefig('Resulted_Figures/Peak{}_FXHM.png'.format(i+1))
     plt.show()
 
 
-def plot_intensity(data):
-    """Plot the figure showing changes in Intendity. """
+def plot_intensity(data_2d, i):
+    """Plot the figure showing changes in Intendity (for a peak). 
+    data_2d: shape of 11 * len(ys)
+            11 --> number of parameter types
+            len(ys) --> number of data sets
+    i: the index of peak, min as 0. Imported to name picture file.
+    """
     plt.title("Changes in Intensity")
-    plt.plot(data[0][3:],data[9][3:],'sienna',linewidth=1.0)
-    plt.errorbar(data[0][3:],data[9][3:],yerr=data[10][3:],fmt='o',ecolor='k',\
-        color='mediumseagreen',elinewidth=1,capsize=1)
+    plt.plot(data_2d[0],data_2d[9],'sienna',linewidth=1.0)
+    plt.errorbar(data_2d[0],data_2d[9],yerr=data_2d[10],fmt='o',\
+        ecolor='k',color='mediumseagreen',elinewidth=1,capsize=1)
     plt.xlabel('Time (min)') 
     plt.ylabel('Intensity')
-    plt.savefig('Resulted_Figures/Changes_In_Intensity.png')
+    plt.savefig('Resulted_Figures/Peak{}_Intensity.png'.format(i+1))
     plt.show()
 
 
-def tabulate_result(data):
-    """Output data to a .csv file. """
-    output_data = np.array(data).transpose()  # same format as input file
+def tabulate_result(data_2d, i):
+    """Output data of a peak to a .csv file. 
+    data_2d: shape of 11 * len(ys)
+            11 --> number of parameter types
+            len(ys) --> number of data sets
+    i: the index of peak, min as 0. Imported to name the .csv file.
+    """
+    output_data = np.array(data_2d).transpose()  # same format as input file
     header = ['TIME','AMPLITUDE','STD_ERR','CENTER','STD_ERR','SIGMA',\
         'STD_ERR','FWHM','STD_ERR','HEIGHT','STD_ERR']
 
-    with open('Output_Data/Output_Result.csv', 'w', ) as fp:
+    with open('Output_Data/Peak{}_Result.csv'.format(i+1), 'w', ) as fp:
         wr = csv.writer(fp, quoting=csv.QUOTE_ALL)
         wr.writerow(header)
         for line in output_data:
             wr.writerow(line)
         wr.writerow([ ])
-        wr.writerow([' ','(  0.0 in STD_ERR means',' NoneType.  )'])
+        wr.writerow([' ','(  0.0 in STD_ERR ','means NoneType. )'])
 
 
-def plot_3d(x, ys):
-    """Plot original data (3d version)"""
-    ax = plt.axes(projection='3d')
-    for i in range(len(ys)):
-        z = np.ones(len(ys[0]))*10*i  # time = dataset_index * 10 
-        ax.plot3D(x[55:],z[55:],ys[i][55:])
-        # plt.loglog(x, ys[i], linewidth = 0.6)
-    ax.set_xlabel('q ($nm^{-1}$)')
-    ax.set_ylabel('Time (min)')
-    ax.set_zlabel('Intensity ($cm^{-1}$)')
-    plt.show()
+def summarize_peaks(data_3d):
+    """1. Tabulate parameters for several peaks.
+    2. Plot changes in FWHM and Intensity for peaks. 
+    
+    data_3d:
+    a 3-d array of shape num * 11 * len(ys)
+    1st dimension: the index of peak focused on
+    2nd dimension: the index of corresponding parameter
+    3rd dimension: the index of current dataset"""
+    for i in range(len(data_3d)):
+        plot_fwhm(data_3d[i])
+        plot_intensity(data_3d[i])
+        tabulate_result(data_3d[i])
