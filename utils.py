@@ -6,6 +6,7 @@ import codecs
 import os
 
 import numpy as np
+import seaborn as sns
 import matplotlib.pyplot as plt
 
 from pathlib import Path
@@ -107,7 +108,7 @@ def plot_initial_3d(x, ys):
     ax = plt.axes(projection='3d')
     for i in range(len(ys)):
         z = np.ones(len(ys[0]))*10*i  # time = dataset_index * 10 
-        ax.plot3D(x,z,ys[i],c='black')
+        ax.plot3D(x,z,ys[i])
     ax.set_xlabel('q ($nm^{-1}$)')
     ax.set_ylabel('Time (min)')
     ax.set_zlabel('Intensity ($cm^{-1}$)')
@@ -723,7 +724,7 @@ def get_pars(fit_result):
     value = []
     std_err = []
     for name, par in fit_result.params.items():
-        print(f"{name}: value={'%.6f'%float(par.value)} +/- {par.stderr} ")
+        print(f"{name}: value={'%.6f'%float(par.value)}+/-{'%.6f'%par.stderr}")
         value.append(float(par.value))
         std_err.append(check_float(par.stderr))
     return np.array(value), np.array(std_err)
@@ -737,13 +738,15 @@ def fit_curve_with_baseline(x, y, x_range, guess1, guess2, i=0):
 
     baseline = baseline_als(yy, 10000, 0.01)
     baseline_subtracted = yy - baseline
-    best_fit, fit_result = fit_curve_gauss(xx, baseline_subtracted, guess1, guess2)
+    best_fit, fit_result = fit_curve_gauss(xx,baseline_subtracted,guess1,guess2)
 
     plt.title(f"{i}-th dataset")
-    plt.plot(xx, yy, '--', label='original data')
-    plt.plot(xx, baseline, ':', label='baseline')
-    plt.plot(xx, baseline_subtracted, '-', label='subtracted baseline')
-    plt.plot(xx, best_fit, '-', label='fit curve')
+    plt.plot(xx,yy, '--', c='k', label = 'original data')
+    plt.plot(xx, best_fit, '-', c='tab:red', label = 'fit curve')
+    plt.plot(xx, baseline, '-', c='tab:blue', label = 'baseline', linewidth = \
+        0.8)
+    plt.plot(xx, baseline_subtracted, '--', c='tab:green', label = 'subtracted\
+         baseline')
     plt.legend()
     plt.savefig('Resulted_Figures/Dataset_{}.png'.format(i))
     plt.show()
@@ -771,7 +774,7 @@ def summarize_data3D(x, ys, x_range, num, guess1, guess2):
     for i in range(len(ys)):
         print(f"\n{i}th dataset: ")
         # data[0][i] = i*10
-        fit_result = fit_curve_with_baseline(x, ys[i], x_range, guess1, guess2, i=i)
+        fit_result = fit_curve_with_baseline(x,ys[i],x_range,guess1,guess2,i=i)
         pars_value, pars_stderr = get_pars(fit_result)
         for j in range(num):
             data_3d[j][0][i] = i*10
@@ -790,9 +793,9 @@ def plot_fwhm(data_2d, i):
     i: the index of peak, min as 0. Imported to name picture file.
     """
     plt.title("Peak {} - Changes in FXHM".format(i+1))
-    plt.plot(data_2d[0],data_2d[7],'sienna',linewidth=1.0)
+    plt.plot(data_2d[0],data_2d[7],'k',linewidth=1.0)
     plt.errorbar(data_2d[0],data_2d[7],yerr=data_2d[8],fmt='o',\
-        ecolor='k',color='mediumseagreen',elinewidth=1,capsize=1)
+        ecolor='tab:blue',color='tab:orange',elinewidth=1,capsize=1)
     plt.xlabel('Time (min)') 
     plt.ylabel('Full Width at Half Maximum')
     plt.savefig('Resulted_Figures/Peak{}_FXHM.png'.format(i+1))
@@ -807,9 +810,9 @@ def plot_intensity(data_2d, i):
     i: the index of peak, min as 0. Imported to name picture file.
     """
     plt.title("Peak {} - Changes in Intensity".format(i+1))
-    plt.plot(data_2d[0],data_2d[9],'sienna',linewidth=1.0)
+    plt.plot(data_2d[0],data_2d[9],'k',linewidth=1.0)
     plt.errorbar(data_2d[0],data_2d[9],yerr=data_2d[10],fmt='o',\
-        ecolor='k',color='mediumseagreen',elinewidth=1,capsize=1)
+        ecolor='tab:blue',color='tab:orange',elinewidth=1,capsize=1)
     plt.xlabel('Time (min)') 
     plt.ylabel('Intensity')
     plt.savefig('Resulted_Figures/Peak{}_Intensity.png'.format(i+1))

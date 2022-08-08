@@ -49,8 +49,8 @@ def main():
     plot_initial_2d(x, ys)
     ascii_guess1 = [2.4, 0.038, 0.3]
     ascii_guess2 = [3.82, 0.07, 1.13]
-    # data_3d = summarize_data3D(x,ys,[2, 4],2,ascii_guess1,ascii_guess2)
-    # summarize_peaks(data_3d)
+    data_3d = summarize_data3D(x,ys,[2, 4],2,ascii_guess1,ascii_guess2)
+    summarize_peaks(data_3d)
     summarize_comparison(x, ys[8], [2, 4], ascii_guess1, ascii_guess2)
 
 
