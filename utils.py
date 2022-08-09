@@ -13,6 +13,22 @@ from scipy.sparse.linalg import spsolve
 from lmfit.models import GaussianModel, LorentzianModel, PseudoVoigtModel
 
 
+# def read_csv(file_path):
+#     """ Return the data from file_path, and convert to the right format.
+#         The input should be the path to a .csv file.
+#     """
+#     file_path = Path(file_path)
+#     data = []
+#     with file_path.open(mode='r', encoding="utf-8") as file:
+#         csv_reader = csv.reader(file, delimiter=",", quotechar='\"')
+#         for line in csv_reader:
+#             data.append(line)
+
+#     # The data in file is read by column, so transpose it to read by row.
+#     data_needed = np.array(data).transpose()
+#     data_needed = data_needed.astype(np.float32)  # Convert string to float.
+#     return data_needed
+
 def read_csv(file_path):
     """ Return the data from file_path, and convert to the right format.
         The input should be the path to a .csv file.
@@ -20,7 +36,7 @@ def read_csv(file_path):
     file_path = Path(file_path)
     data = []
     with file_path.open(mode='r', encoding="utf-8") as file:
-        csv_reader = csv.reader(file, delimiter=",", quotechar='\"')
+        csv_reader = csv.reader(file, delimiter="\t", quotechar='\"')
         for line in csv_reader:
             data.append(line)
 
@@ -226,7 +242,9 @@ def fit_curve_voigt(x, y, initial_guess):
 #     return out.best_fit, out.result
 
 
-# There is an algorithm called "Asymmetric Least Squares Smoothing" by P. Eilers and H. Boelens in 2005. The paper is free and you can find it on google.
+# There is an algorithm called "Asymmetric Least Squares Smoothing" by P. 
+# Eilers and H. Boelens in 2005. The paper is free and you can find it on 
+# google.
 def baseline_als(y, lam, p, niter=10):
     L = len(y)
     D = sparse.csc_matrix(np.diff(np.eye(L), 2))
