@@ -57,7 +57,7 @@ def read_ascii_files(dir_path):
         files.sort()
         i = 0  # check the index of current file, add x while reading the first
         for file_path in files:
-            if file_path[-3:] == ".gr":
+            if file_path != ".DS_Store":
                 file_path = dir_path + "/" + file_path
                 data_read = read_ascii(file_path)
                 if i == 0:
