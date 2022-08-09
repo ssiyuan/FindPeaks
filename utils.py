@@ -129,57 +129,101 @@ def get_interval_data(x, y, x_range):
     return x[interval_indices], y[interval_indices]
 
 
-def fit_curve_gauss(x, y, initial_guess1, initial_guess2):
-    gauss1 = GaussianModel(prefix='g1_')
-    pars = gauss1.guess(y, x=x)
-    pars['g1_center'].set(value=initial_guess1[0])
-    pars['g1_sigma'].set(value=initial_guess1[1])
-    pars['g1_amplitude'].set(value=initial_guess1[2])
-    gauss2 = GaussianModel(prefix='g2_')
-    pars.update(gauss2.make_params())
-    pars['g2_center'].set(value=initial_guess2[0], min = x[0])
-    pars['g2_sigma'].set(value=initial_guess2[1])
-    pars['g2_amplitude'].set(value=initial_guess2[2], min = 0)
+# def fit_curve_gauss(x, y, initial_guess1, initial_guess2):
+#     gauss1 = GaussianModel(prefix='g1_')
+#     pars = gauss1.guess(y, x=x)
+#     pars['g1_center'].set(value=initial_guess1[0])
+#     pars['g1_sigma'].set(value=initial_guess1[1])
+#     pars['g1_amplitude'].set(value=initial_guess1[2])
+#     gauss2 = GaussianModel(prefix='g2_')
+#     pars.update(gauss2.make_params())
+#     pars['g2_center'].set(value=initial_guess2[0], min = x[0])
+#     pars['g2_sigma'].set(value=initial_guess2[1])
+#     pars['g2_amplitude'].set(value=initial_guess2[2], min = 0)
 
-    mod = gauss1 + gauss2
+#     mod = gauss1 + gauss2
+#     out = mod.fit(y, pars, x=x)
+#     return out.best_fit, out.result
+
+def fit_curve_gauss(x, y, initial_guess):
+    mod = GaussianModel(prefix='g1_')
+    pars = mod.guess(y, x=x)
+    for i in range(len(initial_guess)):
+        if i != 0:
+            new_mod = GaussianModel(prefix='g{}_'.format(i+1))
+            pars.update(new_mod.make_params())
+            mod = mod + new_mod
+        pars['g{}_center'.format(i+1)].set(value=initial_guess[i][0])
+        pars['g{}_sigma'.format(i+1)].set(value=initial_guess[i][1])
+        pars['g{}_amplitude'.format(i+1)].set(value=initial_guess[i][2])
     out = mod.fit(y, pars, x=x)
     return out.best_fit, out.result
 
 
-def fit_curve_loren(x, y, initial_guess1, initial_guess2):
-    loren1 = LorentzianModel(prefix='l1_')
-    # mod = PseudoVoigtModel()
-    pars = loren1.guess(y, x=x)
-    pars['l1_center'].set(value=initial_guess1[0])
-    pars['l1_sigma'].set(value=initial_guess1[1])
-    pars['l1_amplitude'].set(value=initial_guess1[2])
-    loren2 = LorentzianModel(prefix='l2_')
-    pars.update(loren2.make_params())
-    pars['l2_center'].set(value=initial_guess2[0], min = x[0])
-    pars['l2_sigma'].set(value=initial_guess2[1])
-    pars['l2_amplitude'].set(value=initial_guess2[2], min = 0)
-
-    mod = loren1 + loren2
+def fit_curve_loren(x, y, initial_guess):
+    mod = LorentzianModel(prefix='l1_')
+    pars = mod.guess(y, x=x)
+    for i in range(len(initial_guess)):
+        if i != 0:
+            new_mod = LorentzianModel(prefix='l{}_'.format(i+1))
+            pars.update(new_mod.make_params())
+            mod = mod + new_mod
+        pars['l{}_center'.format(i+1)].set(value=initial_guess[i][0])
+        pars['l{}_sigma'.format(i+1)].set(value=initial_guess[i][1])
+        pars['l{}_amplitude'.format(i+1)].set(value=initial_guess[i][2])
     out = mod.fit(y, pars, x=x)
     return out.best_fit, out.result
 
 
-def fit_curve_voigt(x, y, initial_guess1, initial_guess2):
-    pseu1 = PseudoVoigtModel(prefix='pv1_')
-    # mod = PseudoVoigtModel()
-    pars = pseu1.guess(y, x=x)
-    pars['pv1_center'].set(value=initial_guess1[0])
-    pars['pv1_sigma'].set(value=initial_guess1[1])
-    pars['pv1_amplitude'].set(value=initial_guess1[2])
-    pseu2 = PseudoVoigtModel(prefix='pv2_')
-    pars.update(pseu2.make_params())
-    pars['pv2_center'].set(value=initial_guess2[0], min = x[0])
-    pars['pv2_sigma'].set(value=initial_guess2[1])
-    pars['pv2_amplitude'].set(value=initial_guess2[2], min = 0)
-
-    mod = pseu1 + pseu2
+def fit_curve_voigt(x, y, initial_guess):
+    mod = PseudoVoigtModel(prefix='pv1_')
+    pars = mod.guess(y, x=x)
+    for i in range(len(initial_guess)):
+        if i != 0:
+            new_mod = PseudoVoigtModel(prefix='pv{}_'.format(i+1))
+            pars.update(new_mod.make_params())
+            mod = mod + new_mod
+        pars['pv{}_center'.format(i+1)].set(value=initial_guess[i][0])
+        pars['pv{}_sigma'.format(i+1)].set(value=initial_guess[i][1])
+        pars['pv{}_amplitude'.format(i+1)].set(value=initial_guess[i][2])
     out = mod.fit(y, pars, x=x)
     return out.best_fit, out.result
+
+
+# def fit_curve_loren(x, y, initial_guess1, initial_guess2):
+#     loren1 = LorentzianModel(prefix='l1_')
+#     # mod = PseudoVoigtModel()
+#     pars = loren1.guess(y, x=x)
+#     pars['l1_center'].set(value=initial_guess1[0])
+#     pars['l1_sigma'].set(value=initial_guess1[1])
+#     pars['l1_amplitude'].set(value=initial_guess1[2])
+#     loren2 = LorentzianModel(prefix='l2_')
+#     pars.update(loren2.make_params())
+#     pars['l2_center'].set(value=initial_guess2[0], min = x[0])
+#     pars['l2_sigma'].set(value=initial_guess2[1])
+#     pars['l2_amplitude'].set(value=initial_guess2[2], min = 0)
+
+#     mod = loren1 + loren2
+#     out = mod.fit(y, pars, x=x)
+#     return out.best_fit, out.result
+
+
+# def fit_curve_voigt(x, y, initial_guess1, initial_guess2):
+#     pseu1 = PseudoVoigtModel(prefix='pv1_')
+#     # mod = PseudoVoigtModel()
+#     pars = pseu1.guess(y, x=x)
+#     pars['pv1_center'].set(value=initial_guess1[0])
+#     pars['pv1_sigma'].set(value=initial_guess1[1])
+#     pars['pv1_amplitude'].set(value=initial_guess1[2])
+#     pseu2 = PseudoVoigtModel(prefix='pv2_')
+#     pars.update(pseu2.make_params())
+#     pars['pv2_center'].set(value=initial_guess2[0], min = x[0])
+#     pars['pv2_sigma'].set(value=initial_guess2[1])
+#     pars['pv2_amplitude'].set(value=initial_guess2[2], min = 0)
+
+#     mod = pseu1 + pseu2
+#     out = mod.fit(y, pars, x=x)
+#     return out.best_fit, out.result
 
 
 # There is an algorithm called "Asymmetric Least Squares Smoothing" by P. Eilers and H. Boelens in 2005. The paper is free and you can find it on google.
@@ -218,7 +262,7 @@ def get_pars(fit_result):
     return np.array(value), np.array(std_err)
 
 
-def fit_curve_with_baseline(x, y, x_range, guess1, guess2, i=0):
+def fit_curve_with_baseline(x, y, x_range, guess, i=0):
     """1. Fit curve with result after subtracting baseline. 
     2. Plot results. 
     """
@@ -226,7 +270,7 @@ def fit_curve_with_baseline(x, y, x_range, guess1, guess2, i=0):
 
     baseline = baseline_als(yy, 10000, 0.01)
     baseline_subtracted = yy - baseline
-    best_fit, fit_result = fit_curve_gauss(xx,baseline_subtracted,guess1,guess2)
+    best_fit, fit_result = fit_curve_gauss(xx,baseline_subtracted,guess)
 
     plt.title(f"{i}-th dataset")
     plt.plot(xx, baseline, '-', c='tab:blue', label = 'baseline', linewidth = \
@@ -242,7 +286,7 @@ def fit_curve_with_baseline(x, y, x_range, guess1, guess2, i=0):
     return fit_result
 
 
-def summarize_data3D(x, ys, x_range, num, guess1, guess2):
+def summarize_data3D(x, ys, x_range, num, guess):
     """Summerize the fitting results into an array. 
     x_range: interval limiting the range of peaks
     num: number of peaks
@@ -262,7 +306,7 @@ def summarize_data3D(x, ys, x_range, num, guess1, guess2):
     for i in range(len(ys)):
         print(f"\n{i}th dataset: ")
         # data[0][i] = i*10
-        fit_result = fit_curve_with_baseline(x,ys[i],x_range,guess1,guess2,i=i)
+        fit_result = fit_curve_with_baseline(x,ys[i],x_range,guess,i=i)
         pars_value, pars_stderr = get_pars(fit_result)
         for j in range(num):
             data_3d[j][0][i] = i*10
@@ -342,13 +386,14 @@ def summarize_peaks(data_3d):
         tabulate_result(data_3d[i], i)
 
 
-def compare_models(x, y, guess1, guess2):
+# def compare_models(x, y, guess1, guess2):
+def compare_models(x, y, guess):
     """Compare 3 models with a figure. """
     baseline = baseline_als(y, 10000, 0.01)
     baseline_subtracted = y - baseline
-    best_fit_gauss, _ = fit_curve_gauss(x, baseline_subtracted, guess1, guess2)
-    best_fit_loren, _ = fit_curve_loren(x, baseline_subtracted, guess1, guess2)
-    best_fit_voigt, _ = fit_curve_voigt(x, baseline_subtracted, guess1, guess2)
+    best_fit_gauss, _ = fit_curve_gauss(x, baseline_subtracted, guess)
+    best_fit_loren, _ = fit_curve_loren(x, baseline_subtracted, guess)
+    best_fit_voigt, _ = fit_curve_voigt(x, baseline_subtracted, guess)
 
     result_gauss = best_fit_gauss + baseline
     result_loren = best_fit_loren + baseline
@@ -411,9 +456,9 @@ def fit_index(data_2d):
     return fit_indices
 
 
-def summarize_comparison(x, y, x_range, guess1, guess2):
+def summarize_comparison(x, y, x_range, guess):
     xx, yy = get_interval_data(x, y, x_range)
-    result_gauss, result_loren, result_voigt = compare_models(xx, yy, guess1, guess2)
+    result_gauss, result_loren, result_voigt = compare_models(xx, yy, guess)
     data_2d = np.zeros((5, len(xx)))  # time + pars_value + pars_stderr
     data_2d[0] = xx
     data_2d[1] = yy

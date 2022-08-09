@@ -28,12 +28,12 @@ def main():
     x, ys = process_original_data(data)
     plot_initial_3d(x, ys)
     plot_initial_2d(x, ys)
-    ascii_guess1 = [2.4, 0.038, 0.3]
-    ascii_guess2 = [3.82, 0.07, 1.13]
-    data_3d = summarize_data3D(x,ys,[2, 4],2,ascii_guess1,ascii_guess2)
-    summarize_peaks(data_3d)
-    summarize_comparison(x, ys[8], [2, 4], ascii_guess1, ascii_guess2)
-
+    # ascii_guess2 = [2.4, 0.038, 0.3]
+    # ascii_guess1 = [3.82, 0.07, 1.13]
+    ascii_guess = [[4.5, 0.07, 1.2], [3.82, 0.07, 1.13], [2.4, 0.038, 0.3]]
+    # data_3d = summarize_data3D(x,ys,[2, 4],2,ascii_guess1,ascii_guess2)
+    # summarize_peaks(data_3d)
+    summarize_comparison(x, ys[8], [2, 5], ascii_guess)
     
 
 if __name__ == "__main__":
