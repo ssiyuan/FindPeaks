@@ -13,30 +13,28 @@ from scipy.sparse.linalg import spsolve
 from lmfit.models import GaussianModel, LorentzianModel, PseudoVoigtModel
 
 
-# def read_csv(file_path):
-#     """ Return the data from file_path, and convert to the right format.
-#         The input should be the path to a .csv file.
-#     """
-#     file_path = Path(file_path)
-#     data = []
-#     with file_path.open(mode='r', encoding="utf-8") as file:
-#         csv_reader = csv.reader(file, delimiter=",", quotechar='\"')
-#         for line in csv_reader:
-#             data.append(line)
+def check_file_type(file_path):
+    # # validation
+    # if file_path[-4:] != '.csv' and file_path[-4:] != '.dat':
+    #     return TypeError
+    return file_path[-4:]
 
-#     # The data in file is read by column, so transpose it to read by row.
-#     data_needed = np.array(data).transpose()
-#     data_needed = data_needed.astype(np.float32)  # Convert string to float.
-#     return data_needed
 
 def read_csv(file_path):
     """ Return the data from file_path, and convert to the right format.
         The input should be the path to a .csv file.
+        only .csv/.dat
     """
+    file_type = check_file_type(file_path)
     file_path = Path(file_path)
     data = []
     with file_path.open(mode='r', encoding="utf-8") as file:
-        csv_reader = csv.reader(file, delimiter="\t", quotechar='\"')
+        if file_type == '.csv':
+            csv_reader = csv.reader(file, delimiter=",", quotechar='\"')
+        elif file_type == '.dat':
+            csv_reader = csv.reader(file, delimiter="\t", quotechar='\"')
+        else:
+            return "Error here."
         for line in csv_reader:
             data.append(line)
 
