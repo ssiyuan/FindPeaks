@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>695</width>
+    <height>476</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,7 @@
     <item row="0" column="0">
      <widget class="QLabel" name="label">
       <property name="text">
-       <string>TextLabel</string>
+       <string>1. Import file with the ！！！！！！！！！</string>
       </property>
      </widget>
     </item>
@@ -36,7 +36,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>695</width>
      <height>21</height>
     </rect>
    </property>
@@ -44,16 +44,23 @@
     <property name="title">
      <string>Import ...</string>
     </property>
+    <widget class="QMenu" name="menuASCII">
+     <property name="title">
+      <string>ASCII FIles</string>
+     </property>
+     <addaction name="actionFolder"/>
+     <addaction name="actionFiles"/>
+    </widget>
     <addaction name="actionCSV_File"/>
-    <addaction name="actionDAT_File"/>
-    <addaction name="actionASCII_Folder"/>
+    <addaction name="separator"/>
+    <addaction name="menuASCII"/>
    </widget>
    <addaction name="menuOpen"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionCSV_File">
    <property name="text">
-    <string>CSV File</string>
+    <string>Data File (*.csv *.dat)</string>
    </property>
   </action>
   <action name="actionDAT_File">
@@ -61,9 +68,14 @@
     <string>DAT File</string>
    </property>
   </action>
-  <action name="actionASCII_Folder">
+  <action name="actionFolder">
    <property name="text">
-    <string>ASCII Folder</string>
+    <string>Folder</string>
+   </property>
+  </action>
+  <action name="actionFiles">
+   <property name="text">
+    <string>Files</string>
    </property>
   </action>
  </widget>

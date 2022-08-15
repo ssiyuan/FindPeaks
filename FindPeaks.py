@@ -7,12 +7,13 @@
 
 
 from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6.QtWidgets import *
 
 
-class Ui_MainWindow(object):
+class Ui_MainWindow(QtWidgets.QMainWindow):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(800, 600)
+        MainWindow.resize(695, 476)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
@@ -25,23 +26,27 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.pushButton, 1, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 695, 21))
         self.menubar.setObjectName("menubar")
         self.menuOpen = QtWidgets.QMenu(self.menubar)
         self.menuOpen.setObjectName("menuOpen")
+        self.menuASCII = QtWidgets.QMenu(self.menuOpen)
+        self.menuASCII.setObjectName("menuASCII")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
         self.actionCSV_File = QtGui.QAction(MainWindow)
         self.actionCSV_File.setObjectName("actionCSV_File")
-        self.actionDAT_File = QtGui.QAction(MainWindow)
-        self.actionDAT_File.setObjectName("actionDAT_File")
-        self.actionASCII_Folder = QtGui.QAction(MainWindow)
-        self.actionASCII_Folder.setObjectName("actionASCII_Folder")
+        self.actionFolder = QtGui.QAction(MainWindow)
+        self.actionFolder.setObjectName("actionFolder")
+        self.actionFiles = QtGui.QAction(MainWindow)
+        self.actionFiles.setObjectName("actionFiles")
+        self.menuASCII.addAction(self.actionFolder)
+        self.menuASCII.addAction(self.actionFiles)
         self.menuOpen.addAction(self.actionCSV_File)
-        self.menuOpen.addAction(self.actionDAT_File)
-        self.menuOpen.addAction(self.actionASCII_Folder)
+        self.menuOpen.addSeparator()
+        self.menuOpen.addAction(self.menuASCII.menuAction())
         self.menubar.addAction(self.menuOpen.menuAction())
 
         self.retranslateUi(MainWindow)
@@ -50,12 +55,17 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "FindPeaks"))
-        self.label.setText(_translate("MainWindow", "TextLabel"))
+        self.label.setText(_translate("MainWindow", "1. Import file with the "))
         self.pushButton.setText(_translate("MainWindow", "Try"))
         self.menuOpen.setTitle(_translate("MainWindow", "Import ..."))
-        self.actionCSV_File.setText(_translate("MainWindow", "CSV File"))
-        self.actionDAT_File.setText(_translate("MainWindow", "DAT File"))
-        self.actionASCII_Folder.setText(_translate("MainWindow", "ASCII Folder"))
+        self.menuASCII.setTitle(_translate("MainWindow", "ASCII FIles"))
+        self.actionCSV_File.setText(_translate("MainWindow", "Data File (*.csv *.dat)"))
+        self.actionCSV_File.triggered.connect(self.openFile)
+        self.actionFolder.setText(_translate("MainWindow", "Folder"))
+        self.actionFiles.setText(_translate("MainWindow", "Files"))
+
+    def openFile(self):
+        fileName = QFileDialog.getOpenFileName(self, "Choose File", "", "Data File (*.csv *.dat)")
 
 
 if __name__ == "__main__":

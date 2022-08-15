@@ -1,11 +1,14 @@
 import numpy as np
 
-from utils import (
+from OpenFile import (
     read_csv,
-    read_ascii_files,
+    read_ascii_files)
+
+from utils import (
     process_original_data,
     plot_initial_2d,
     plot_initial_3d,
+    choose_model,
     summarize_data3D,
     summarize_peaks,
     summarize_comparison)
@@ -28,45 +31,56 @@ def main():
 
     x, ys = process_original_data(data)
 
-    figure_choice = input('\n3. Choose a figure of initial data (2d or 3d): ')
-    if figure_choice == '2d' or figure_choice == '2':
-        plot_initial_2d(x, ys)
-    if figure_choice == '3d' or figure_choice == '3':
+    print('\n3. Plot the 2d figure: ')
+    plot_initial_2d(x, ys)
+    figure_choice = input('\n   Plot the 3d figure? (y/n) ')
+    while figure_choice != 'y' and figure_choice != 'n':
+        figure_choice = input('\n   Please choose a valid answer: ')
+    if figure_choice == 'y':
         plot_initial_3d(x, ys)
     
     
-    x_min, x_max = input('\nInput the range for peaks: ').split(',')
+    print('\n4. Start fitting: ')
+    x_min, x_max = input('\n   Input the range for peaks: ').split(',')
     x_range = np.array([float(x_min), float(x_max)])
     # Input: 1,6.5
     # Input: 2,5
-    peak_num = int(input('\nInput number of peaks: '))
+    peak_num = int(input('\n   Input number of peaks: '))
     # Input: 2
     # Input: 3
+    
+
     peak_par_guess = np.zeros((peak_num,3))
+    print('\n5. Input guess for parameters of peaks')
     for i in range(peak_num):
-        c,s,a=input('\nInput guess for Peak {} pars: '.format(i+1)).split(',')
+        print('\n   Peak {} pars: '.format(i+1))
+        c = input('   center (x): ')
+        s = input('   sigma (characteristic width): ')
+        a = input('   amplitude (overall intensity or area of peak): ')
         peak_par_guess[i][0] = float(c)
         peak_par_guess[i][1] = float(s)
         peak_par_guess[i][2] = float(a)
-    # print(peak_par_guess)
-    # print(type(peak_par_guess))
-    # # Input: 6.35, 0.038, 0.00934
-    # 1.8, 0.2, 0.003
-    # Input: 4.5, 0.07, 1.2
-    # 3.82, 0.07, 1.13
-    # 2.4, 0.038, 0.3
-    data_3d = summarize_data3D(x, ys, x_range, peak_num, peak_par_guess)
+    # # Input: 6.35 0.038 0.00934
+    # 1.8 0.2 0.003
+    # Input: 4.5 0.07 1.2
+    # 3.82 0.07 1.13
+    # 2.4 0.038 0.3
 
-    summary_changes = input('\n4. Summarize changes along time? (y or n) ')
+    index = input('\n5. Choose a dataset to compare Gaussian, Lorentzian and \
+Pseudo-Voigt Models: ')
+    # 11
+    # 8
+    summarize_comparison(x, ys[int(index)], x_range, peak_par_guess)
+    model = input('\n   Choose a model with the first letter g/l/p: ')
+    while choose_model(model) == 1:
+        model = input('\n   The input is invalid. Please use the first letter: ')
+    Model = choose_model(model)
+
+    data_3d = summarize_data3D(Model, x, ys, x_range, peak_num, peak_par_guess)
+
+    summary_changes = input('\n6. Summarize changes along time? (y or n) ')
     if summary_changes == 'y':
         summarize_peaks(data_3d)  # plot_fwhm, plot_intensity, tabulate_result
-
-    summary_comparison = input('\n5. Compare between 3 function? (y or n) ')
-    # Input: 11
-    # Input: 8
-    if summary_comparison == 'y':
-        dataset_index = input('\n   Please choose a dataset for the comparison: ')
-        summarize_comparison(x, ys[int(dataset_index)], x_range, peak_par_guess)
 
 
 if __name__ == "__main__":
