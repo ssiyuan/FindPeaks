@@ -69,7 +69,7 @@ def get_interval_data(x, y, x_range):
     return x[interval_indices], y[interval_indices]
 
 
-def choose_model(model):
+def choose_model_with_str(model):
     if model == 'Gaussian' or model == 'gaussian' or model == 'g':
         return GaussianModel
     elif model == 'Lorentzian' or model == 'lorentzian' or model == 'l':
@@ -81,7 +81,7 @@ def choose_model(model):
         return 1
 
 
-def fit_curve(Model, x, y, initial_guess):
+def fit_curve(Model, x, y, initial_guess, center_min=0):
     mod = Model(prefix='m1_')
     pars = mod.guess(y, x=x)
     for i in range(len(initial_guess)):
@@ -89,9 +89,9 @@ def fit_curve(Model, x, y, initial_guess):
             new_mod = Model(prefix='m{}_'.format(i+1))
             pars.update(new_mod.make_params())
             mod = mod + new_mod
-        pars['m{}_center'.format(i+1)].set(value=initial_guess[i][0])
+        pars['m{}_center'.format(i+1)].set(value=initial_guess[i][0],min=center_min)
         pars['m{}_sigma'.format(i+1)].set(value=initial_guess[i][1])
-        pars['m{}_amplitude'.format(i+1)].set(value=initial_guess[i][2])
+        pars['m{}_amplitude'.format(i+1)].set(value=initial_guess[i][2],min=0)
     out = mod.fit(y, pars, x=x)
     return out.best_fit, out.result
 
@@ -134,7 +134,7 @@ def get_pars(fit_result):
     return np.array(value), np.array(std_err)
 
 
-def fit_curve_with_baseline(Model, x, y, x_range, guess, i=0):
+def fit_curve_with_baseline(Model, x, y, x_range, guess, i, center_min=0):
     """1. Fit curve with result after subtracting baseline. 
     2. Plot results. 
     """
@@ -142,7 +142,7 @@ def fit_curve_with_baseline(Model, x, y, x_range, guess, i=0):
 
     baseline = baseline_als(yy, 10000, 0.01)
     baseline_subtracted = yy - baseline
-    best_fit, fit_result = fit_curve(Model,xx,baseline_subtracted,guess)
+    best_fit, fit_result = fit_curve(Model,xx,baseline_subtracted,guess,center_min)
 
     plt.title(f"{i}-th dataset")
     plt.plot(xx, baseline, '-', c='tab:blue', label = 'baseline', linewidth = \
@@ -158,7 +158,7 @@ def fit_curve_with_baseline(Model, x, y, x_range, guess, i=0):
     return fit_result
 
 
-def summarize_data3D(Model, x, ys, x_range, num, guess):
+def summarize_data3D(Model, x, ys, x_range, num, guess, center_min):
     """Summerize the fitting results into an array. 
     x_range: interval limiting the range of peaks
     num: number of peaks
@@ -178,7 +178,8 @@ def summarize_data3D(Model, x, ys, x_range, num, guess):
     for i in range(len(ys)):
         print(f"\n{i}th dataset: ")
         # data[0][i] = i*10
-        fit_result = fit_curve_with_baseline(Model,x,ys[i],x_range,guess,i=i)
+        fit_result = fit_curve_with_baseline(Model, x, ys[i], x_range, guess, \
+            i, center_min)
         pars_value, pars_stderr = get_pars(fit_result)
         for j in range(num):
             data_3d[j][0][i] = i*10
@@ -259,13 +260,13 @@ def summarize_peaks(data_3d):
 
 
 # def compare_models(x, y, guess1, guess2):
-def compare_models(x, y, guess):
+def compare_models(x, y, guess, center_min):
     """Compare 3 models with a figure. """
     baseline = baseline_als(y, 10000, 0.01)
     baseline_subtracted = y - baseline
-    best_fit_gau,_ = fit_curve(GaussianModel, x, baseline_subtracted, guess)
-    best_fit_lor,_ = fit_curve(LorentzianModel, x, baseline_subtracted, guess)
-    best_fit_pse,_ = fit_curve(PseudoVoigtModel, x, baseline_subtracted, guess)
+    best_fit_gau,_ = fit_curve(GaussianModel, x, baseline_subtracted, guess, center_min)
+    best_fit_lor,_ = fit_curve(LorentzianModel, x, baseline_subtracted, guess, center_min)
+    best_fit_pse,_ = fit_curve(PseudoVoigtModel, x, baseline_subtracted, guess, center_min)
 
     result_gauss = best_fit_gau + baseline
     result_loren = best_fit_lor + baseline
@@ -328,9 +329,9 @@ def fit_index(data_2d):
     return fit_indices
 
 
-def summarize_comparison(x, y, x_range, guess):
+def summarize_comparison(x, y, x_range, guess, center_min):
     xx, yy = get_interval_data(x, y, x_range)
-    result_gauss, result_loren, result_voigt = compare_models(xx, yy, guess)
+    result_gauss, result_loren, result_voigt = compare_models(xx, yy, guess, center_min)
     data_2d = np.zeros((5, len(xx)))  # time + pars_value + pars_stderr
     data_2d[0] = xx
     data_2d[1] = yy
