@@ -54,7 +54,7 @@ def plot_2d_3d_figures(x, ys):
     if figure_choice == 'y':
         plot_initial_3d(x, ys)
 
-    print("\nThe resulted figures are stored in folder 'output_figures'. ")
+    print_store_figures()
 
 
 def input_peak_range():
@@ -127,19 +127,6 @@ def input_index():
     return int(index)
 
 
-def input_model():
-    """Read the model name from terminal.
-
-    Returns:
-        function: corresponding function for the model name input
-    """
-    model = input("\n7. Choose a model with the first letter g/l/p: ")
-    while choose_model_with_str(model) == 1:
-        model = input("\n   The input is invalid. Use the first letter: ")
-    Model = choose_model_with_str(model)
-    return Model
-
-
 def input_directory():
     """Check if you want to store CSV files in a new folder.
 
@@ -147,7 +134,7 @@ def input_directory():
         string (the path to store file) OR 1 (if no input path)
     """
     dir_choice = input(
-        "\n   The default directory to store file is 'output_files', do you want to change it? (y/n) ")
+        "\n   The default directory to store resulted data is 'output_files', do you want to change it? (y/n) ")
     while dir_choice != 'y' and dir_choice != 'n':
         dir_choice = input("\n   Please choose a valid answer: ")
     if dir_choice == 'y':
@@ -156,6 +143,26 @@ def input_directory():
         return dir_path
     else:
         return 'output_files'
+
+
+def input_model():
+    """Read the model name from terminal.
+
+    Returns:
+        function: corresponding function for the model name input
+    """
+    model_choice = input(
+        f"\n7. The default model is Gaussian Model, dou you want to change it? (y/n) ")
+    while model_choice != 'y' and model_choice != 'n':
+        model_choice = input("\n   Please choose a valid answer: ")
+    if model_choice == 'n':
+        return choose_model_with_str('Gaussian')
+    else:
+        model = input("\n   Choose a model with the first letter g/l/p: ")
+        while choose_model_with_str(model) == 1:
+            model = input("\n   The input is invalid. Use the first letter: ")
+        Model = choose_model_with_str(model)
+        return Model
 
 
 def plot_changes(data_3d, dir_path):
@@ -170,6 +177,7 @@ def plot_changes(data_3d, dir_path):
     if summary_changes == 'y':
         # plot_fwhm, plot_intensity, tabulate_result
         summarize_peaks(data_3d, dir_path)
+        print_store_figures()
 
 
 def print_store_data(dir_path):
@@ -212,7 +220,6 @@ def main():
     print_store_data(dir_path)
     print_store_figures()
     plot_changes(data_3d, dir_path)
-    print_store_figures()
 
 
 if __name__ == "__main__":

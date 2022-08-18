@@ -39,6 +39,7 @@ def plot_initial_2d(x, ys):
         plt.plot(x, ys[i], linewidth=0.6)
     plt.xlabel('2-theta')
     plt.ylabel('Intensity')
+    check_output_dir('output_figures')
     plt.savefig('output_figures/Initial_2d.png')
     plt.show()
 
@@ -57,6 +58,7 @@ def plot_initial_3d(x, ys):
     ax.set_xlabel('q ($nm^{-1}$)')
     ax.set_ylabel('Time (min)')
     ax.set_zlabel('Intensity ($cm^{-1}$)')
+    check_output_dir('output_figures')
     plt.savefig('output_figures/Initial_3d.png')
     plt.show()
 
@@ -241,8 +243,8 @@ def plot_fitting_results(i, x, y, baseline, best_fit):
     plt.plot(x, y - baseline, '--', c='tab:green', label=label_bs)
     plt.plot(x, best_fit, '-', c='tab:red', label='fit curve')
     plt.legend()
+    check_output_dir('output_figures')
     plt.savefig('output_figures/Dataset_{}.png'.format(i))
-    plt.show()
 
 
 def summarize_data3D(Model, x, ys, x_range, num, guess, center_min=0.0):
@@ -295,6 +297,7 @@ def plot_fwhm(data_2d, i):
                  ecolor='tab:blue', color='tab:orange', elinewidth=1, capsize=1)
     plt.xlabel('Time (min)')
     plt.ylabel('Full Width at Half Maximum')
+    check_output_dir('output_figures')
     plt.savefig('output_figures/Peak{}_FXHM.png'.format(i+1))
     plt.show()
 
@@ -313,6 +316,7 @@ def plot_intensity(data_2d, i):
                  ecolor='tab:blue', color='tab:orange', elinewidth=1, capsize=1)
     plt.xlabel('Time (min)')
     plt.ylabel('Intensity')
+    check_output_dir('output_figures')
     plt.savefig('output_figures/Peak{}_Intensity.png'.format(i+1))
     plt.show()
 
@@ -401,6 +405,7 @@ def plot_single_model_result(x, y, model_result, model_str):
     plt.plot(x, model_result, '-', label='{}'.format(model_str))
     plt.plot(x, abs(model_result-y), '-', label='error')
     plt.legend()
+    check_output_dir('output_figures')
     plt.savefig('output_figures/Comparison_{}.png'.format(model_str))
     plt.show()
 
