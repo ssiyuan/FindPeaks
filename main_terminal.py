@@ -19,7 +19,7 @@ def input_file():
 
     Returns:
         array: 2D array, first row as x, other rows as y datasets
-    """    
+    """
     data = []
     file_type = input("\n1. Input the type of file (1. csv/dat or 2. ASCII): ")
 
@@ -44,7 +44,7 @@ def plot_2d_3d_figures(x, ys):
     Args:
         x (array): 1D
         ys (array): 2D, y datasets
-    """    
+    """
     print("\n3. Plot the 2d figure: ")
     plot_initial_2d(x, ys)
 
@@ -53,7 +53,7 @@ def plot_2d_3d_figures(x, ys):
         figure_choice = input("\n   Please choose a valid answer: ")
     if figure_choice == 'y':
         plot_initial_3d(x, ys)
-    
+
     print("\nThe resulted figures are stored in folder 'output_figures'. ")
 
 
@@ -62,7 +62,7 @@ def input_peak_range():
 
     Returns:
         array: shape of (1,2), lower and upper bound for x
-    """    
+    """
     print("\n4. Start fitting: ")
     x_min, x_max = input("\n   Input the range for peaks (x): ").split(',')
     x_range = np.array([float(x_min), float(x_max)])
@@ -74,7 +74,7 @@ def input_peak_num():
 
     Returns:
         int: number of peaks
-    """    
+    """
     peak_num = int(input("\n   Input number of peaks: "))
     return peak_num
 
@@ -87,8 +87,8 @@ def input_pear_par_guess(peak_num):
 
     Returns:
         array: shape of (peak_num, 3), each row for guess of parameters
-    """    
-    peak_par_guess = np.zeros((peak_num,3))
+    """
+    peak_par_guess = np.zeros((peak_num, 3))
     print("\n5. Input guess for parameters of peaks\n\n   5.1")
     for i in range(peak_num):
         print(f"\n   Peak {i+1} pars: ")
@@ -106,7 +106,7 @@ def input_center_min():
 
     Returns:
         float: lower bound for peak center
-    """    
+    """
     center_min = 0
     min_choice = input("\n   5.2 Set a lower bound for the center? (y/n) ")
     while min_choice != 'y' and min_choice != 'n':
@@ -121,8 +121,9 @@ def input_index():
 
     Returns:
         int: an index of dataset
-    """    
-    index = input("\n6. Choose a dataset to compare Gaussian, Lorentzian and Pseudo-Voigt Models: ")
+    """
+    index = input(
+        "\n6. Choose a dataset to compare Gaussian, Lorentzian and Pseudo-Voigt Models: ")
     return int(index)
 
 
@@ -131,7 +132,7 @@ def input_model():
 
     Returns:
         function: corresponding function for the model name input
-    """    
+    """
     model = input("\n7. Choose a model with the first letter g/l/p: ")
     while choose_model_with_str(model) == 1:
         model = input("\n   The input is invalid. Use the first letter: ")
@@ -145,11 +146,13 @@ def input_directory():
     Returns:
         string (the path to store file) OR 1 (if no input path)
     """
-    dir_choice = input("\n   The default directory to store file is 'output_files', do you want to change it? (y/n) ")
+    dir_choice = input(
+        "\n   The default directory to store file is 'output_files', do you want to change it? (y/n) ")
     while dir_choice != 'y' and dir_choice != 'n':
         dir_choice = input("\n   Please choose a valid answer: ")
     if dir_choice == 'y':
-        dir_path = input("\n   Input a new directory path (Do not input '/' at the end.): ")
+        dir_path = input(
+            "\n   Input a new directory path (Do not input '/' at the end.): ")
         return dir_path
     else:
         return 'output_files'
@@ -162,10 +165,11 @@ def plot_changes(data_3d, dir_path):
         data_3d (array): 1st dimension: peak
                         2nd dimension: time,amplitude,error,center,error,sigma,error,fwhm,error,height,error
                         3rd dimension: dataset
-    """    
+    """
     summary_changes = input("\n8. Summarize changes along time? (y/n) ")
     if summary_changes == 'y':
-        summarize_peaks(data_3d, dir_path)  # plot_fwhm, plot_intensity, tabulate_result
+        # plot_fwhm, plot_intensity, tabulate_result
+        summarize_peaks(data_3d, dir_path)
 
 
 def print_store_data(dir_path):
@@ -199,10 +203,12 @@ def main():
     # Input 1: 11
     # Input 2: 8
     dir_path = input_directory()
-    summarize_comparison(x, ys[index], x_range, peak_par_guess, center_min, dir_path)
+    summarize_comparison(x, ys[index], x_range,
+                         peak_par_guess, center_min, dir_path)
     print_store_data(dir_path)
     Model = input_model()
-    data_3d = summarize_data3D(Model, x, ys, x_range, peak_num, peak_par_guess, center_min)
+    data_3d = summarize_data3D(
+        Model, x, ys, x_range, peak_num, peak_par_guess, center_min)
     print_store_data(dir_path)
     print_store_figures()
     plot_changes(data_3d, dir_path)

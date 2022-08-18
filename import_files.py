@@ -18,7 +18,8 @@ def check_file_type(file_path):
     """Check if the file is CSV or DAT format. """
     is_valid_file(file_path)
     if file_path[-4:] != '.csv' and file_path[-4:] != '.dat':
-        raise TypeError(f"The format of input file should be CSV or DAT: {file_path}")
+        raise TypeError(
+            f"The format of input file should be CSV or DAT: {file_path}")
     return file_path[-4:]
 
 
@@ -70,16 +71,16 @@ def read_ascii_files(file_paths):
     """
     file_paths.sort()
     data = []
-    i = 0  
-    # Use i to check the index of current file, store the first column as x 
+    i = 0
+    # Use i to check the index of current file, store the first column as x
     # only when i = 0
     for file_path in file_paths:
         data_read = read_ascii(file_path)
         if i == 0:
             data.append(data_read[0])  # x
         data.append(data_read[1])  # y-s
-        i += 1  
-    return np.array(data).astype(np.float32) 
+        i += 1
+    return np.array(data).astype(np.float32)
 
 
 def read_ascii_dir(dir_path):
@@ -97,8 +98,8 @@ def read_ascii_dir(dir_path):
     file_names.sort()
 
     data = []
-    i = 0  
-    # Use i to check the index of current file, store the first column as x 
+    i = 0
+    # Use i to check the index of current file, store the first column as x
     # only when i = 0
     for file_name in file_names:
         if file_name != ".DS_Store":
@@ -107,8 +108,8 @@ def read_ascii_dir(dir_path):
             if i == 0:
                 data.append(data_read[0])  # x
             data.append(data_read[1])  # y-s
-            i += 1 
-    return np.array(data).astype(np.float32) 
+            i += 1
+    return np.array(data).astype(np.float32)
 
 
 def check_output_dir(dir_path):
@@ -118,5 +119,5 @@ def check_output_dir(dir_path):
         dir_path (string): path of directory to store file
     """
     check_dir_end(dir_path)
-    if not os.path.exists(dir_path): 
+    if not os.path.exists(dir_path):
         os.makedirs(dir_path)

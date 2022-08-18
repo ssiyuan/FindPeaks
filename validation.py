@@ -10,8 +10,8 @@ def is_valid_file(file_path):
 
 def is_valid_dir(dir_path):
     if not os.path.isdir(dir_path):
-        raise FileNotFoundError(f"The input directory does not exist: {dir_path}")
-
+        raise FileNotFoundError(
+            f"The input directory does not exist: {dir_path}")
 
 
 # def is_valid_code(code):
@@ -85,4 +85,3 @@ def is_valid_dir(dir_path):
 #         raise TypeError(f"Inappropriate year type for glacier: {type(year)}")
 #     if not is_valid_year_value(year):
 #         raise ValueError(f"Inappropriate year value for glacier: {year}")
-
