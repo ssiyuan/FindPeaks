@@ -245,6 +245,7 @@ def plot_fitting_results(i, x, y, baseline, best_fit):
     plt.legend()
     check_output_dir('output_figures')
     plt.savefig('output_figures/Dataset_{}.png'.format(i))
+    plt.close()
 
 
 def summarize_data3D(Model, x, ys, x_range, num, guess, center_min=0.0):
