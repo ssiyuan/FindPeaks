@@ -2,6 +2,8 @@
 
 import os.path
 
+import numpy as np
+
 
 def is_valid_file(file_path):
     if not os.path.isfile(file_path):
@@ -14,74 +16,89 @@ def is_valid_dir(dir_path):
             f"The input directory does not exist: {dir_path}")
 
 
-# def is_valid_code(code):
-#     return isinstance(code, int) and 0 <= code <= 999
+def is_valid_1D_array(array_1d):
+    """Check if the input is 1D array. """
+    return isinstance(array_1d, (np.ndarray, list)) and len(array_1d.shape) == 1
 
 
-# def is_valid_name(name):
-#     return isinstance(name, str) and 0 < len(name) <= 60
+def is_valid_2D_array(array_2d):
+    """Check if the input is 2D array. """
+    return isinstance(array_2d, (np.ndarray, list)) and len(array_2d.shape) == 2
 
 
-# def is_valid_id(glacier_id):
-#     return (
-#         isinstance(glacier_id, str)
-#         and len(glacier_id) == 5
-#         and all(digit in string.digits for digit in glacier_id)
-#     )
+def is_valid_3D_array(array_3d):
+    """Check if the input is 3D array. """
+    return isinstance(array_3d, (np.ndarray, list)) and len(array_3d.shape) == 3
 
 
-# def is_valid_unit(unit):
-#     return isinstance(unit, str) and len(unit) == 2 and (
-#         all(char in string.ascii_letters.upper() for char in unit)
-#         or unit == '99'
-#     )
+def validate_file_data(file_data):
+    if not is_valid_2D_array(file_data):
+        raise TypeError(
+            f"Input array should be 2D array. {file_data} is {len(file_data.shape)}D {type(file_data)}. ")
 
 
-# def is_valid_location(lat, lon):
-#     return -90 <= lat <= 90 and -180 <= lon <= 180
+def validate_x_range(x, x_range):
+    """Written for calling the function from code. """
+    if isinstance(x_range, list):
+        x_range = np.array(x_range)
+    if x_range.shape != (2,):
+        raise ValueError(f"The input x_range should have shape of (2,): {x_range}. ")
+    if x_range[0] > x_range[1]:
+        raise ValueError(f"The input x_range should have smaller value as first element, and larger one as second: {x_range}. ")
+    if x_range[0] < min(x) or x_range[1] > max(x):
+        raise ValueError(f"The input range is inappropriate: {x_range}. ")
 
 
-# def validate_info(glacier_id, name, unit, lat, lon, code):
-#     """Check that the basic attributes of a glacier have reasonable values."""
-#     if not is_valid_name(name):
-#         raise ValueError(f"Inappropriate name for glacier: {name}")
-#     if not is_valid_code(code):
-#         raise ValueError(f"Inappropriate code for glacier: {code}")
-#     if not is_valid_id(glacier_id):
-#         raise ValueError(f"Inappropriate id for glacier: {glacier_id}")
-#     if not is_valid_unit(unit):
-#         raise ValueError(f"Inappropriate political unit for glacier: {unit}")
-#     if not is_valid_location(lat, lon):
-#         raise ValueError(f"Inappropriate location for glacier: {(lat, lon)}")
+def is_valid_string_range(x, x_min, x_max):
+    """Written for the Command Line Interface. """
+    if not is_valid_float_pos(x_min):
+        return False
+    if not is_valid_float_pos(x_max):
+        return False
+    x_min = float(x_min)
+    x_max = float(x_max)
+    if x_min > x_max:
+        return False
+    if x_min < min(x) or x_max > max(x):
+        return False
+    return True
 
 
-# def is_valid_code_pattern(code_pattern):
-#     return (
-#         is_valid_code(code_pattern)
-#         or (
-#             isinstance(code_pattern, str)
-#             and len(code_pattern) == 3
-#             and all(digit in string.digits + '?' for digit in code_pattern)
-#         )
-#     )
+def is_valid_int(str_int):
+    """Check if the input can be converted to a positive integer.
+
+    Args:
+        str_int (string): a string of integer
+
+    Returns:
+        bool: True if can be converted to integer, else False. 
+    """
+    try: 
+        int(str_int)
+        return True
+    except ValueError:
+        return False
 
 
-# def is_valid_balance(mass_balance):
-#     return isinstance(mass_balance, float)
+def is_valid_int_pos(str_int):
+    return is_valid_int(str_int) and int(str_int) > 0
+        
+
+def is_valid_float(str_float):
+    """Check if the input can be converted to a positive float.
+
+    Args:
+        str_float (string): a string of float
+
+    Returns:
+        bool: True if can be converted to float, else False. 
+    """
+    try: 
+        float(str_float)
+        return True
+    except ValueError:
+        return False
 
 
-# def is_valid_year_type(year):
-#     return isinstance(year, int)
-
-
-# def is_valid_year_value(year):
-#     return year <= datetime.date.today().year
-
-
-# def validate_mass_balance_measurement(year, mass_balance):
-#     if not is_valid_balance(mass_balance):
-#         raise TypeError(f"Inappropriate mass balance type for glacier: {type(mass_balance)}")
-#     if not is_valid_year_type(year):
-#         raise TypeError(f"Inappropriate year type for glacier: {type(year)}")
-#     if not is_valid_year_value(year):
-#         raise ValueError(f"Inappropriate year value for glacier: {year}")
+def is_valid_float_pos(str_float):
+    return is_valid_float(str_float) and float(str_float) > 0

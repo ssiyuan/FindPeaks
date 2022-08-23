@@ -10,21 +10,24 @@ from scipy.sparse.linalg import spsolve
 from lmfit.models import GaussianModel, LorentzianModel, PseudoVoigtModel
 
 from import_files import check_output_dir
+from validation import (
+    validate_file_data,
+    validate_x_range)
 
 
-def process_original_data(data):
+def process_original_data(file_data):
     """Seperate the x values and datasets of y stored in input array.
 
     Args:
-        data (array): 2D array, the first column storing x-axis, other columns 
-                    storing y-axis.
+        file_data (array): 2D array, the first column storing x-axis, other columns storing y-axis.
 
     Returns:
         array: 1D
         array: 2D, each row as a seperate dataset of y
     """
-    x = data[0]  # 2-theta
-    ys = data[1:]  # intensity
+    validate_file_data(file_data)
+    x = file_data[0]  # 2-theta
+    ys = file_data[1:]  # intensity
     return x, ys
 
 
@@ -108,8 +111,7 @@ def choose_model_with_str(model):
     elif model == 'Pseudo-Voigt' or model == 'pseudo-voigt' or model == 'p' or model == 'pv':
         return PseudoVoigtModel
     else:
-        raise ValueError(
-            f"The input model should be Gaussian, Lorentzian or Pseudo-Voigt: {model}")
+        return 1
 
 
 def fit_curve(Model, x, y, initial_guess, center_min=0.0):
@@ -123,8 +125,8 @@ def fit_curve(Model, x, y, initial_guess, center_min=0.0):
 
     Returns:
         array: the model results on the y-axis
-        class 'lmfit.minimizer.MinimizerResult': including the parameters and errors of the model 
-        fitting the peak best
+        class 'lmfit.minimizer.MinimizerResult': including the parameters and errors of the\
+             model which fits the peak best
     """
     mod = Model(prefix='m1_')
     pars = mod.guess(y, x=x)
@@ -175,13 +177,12 @@ def check_stderr(stderr):
         stderr (string): the standard error, a float or string 'NoneType'
 
     Returns:
-        float: the float format of stderr;
-            or 0 when stderr is 'NoneType'
+        float: the float format of stderr; or 0 when stderr is 'NoneType'
     """
     try:
         err = float(stderr)
         return err
-    except TypeError:
+    except ValueError:
         return 0
 
 
@@ -217,8 +218,7 @@ def fit_curve_with_baseline(Model, x, y, baseline, guess, center_min=0.0):
 
     Returns:
         array: the model results on the y-axis
-        class 'lmfit.minimizer.MinimizerResult': including the parameters and errors of the model 
-        fitting the peak best
+        class 'lmfit.minimizer.MinimizerResult': including the parameters and errors of the model fitting the peak best
     """
     baseline_subtracted = y - baseline
     best_fit, fit_result = fit_curve(
@@ -266,6 +266,7 @@ def summarize_data3D(Model, x, ys, x_range, num, guess, center_min=0.0):
             2nd dimension: time+amplitude+error+center+error+sigma+error+fwhm+error+height+error
             3rd dimension: current dataset
     """
+    validate_x_range(x, x_range)
     data_3d = np.zeros((num, 11, len(ys)))
     for i in range(len(ys)):
         print(f"\n{i}th dataset: ")
@@ -464,6 +465,7 @@ def summarize_comparison(x, y, x_range, guess, center_min=0.0, dir_path='output_
         center_min (float, optional): lower bound of center. Defaults to 0.0.
         dir_path (str, optional): the directory to store the file. Defaults to 'output_files'.
     """
+    validate_x_range(x, x_range)
     result_x, result_y = get_interval_data(x, y, x_range)
     result_gauss, result_loren, result_voigt = compare_models(
         result_x, result_y, guess, center_min)

@@ -13,6 +13,55 @@ from analysis import (
     summarize_peaks,
     summarize_comparison)
 
+from validation import (
+    is_valid_int_pos,
+    is_valid_float_pos,
+    is_valid_string_range,
+    validate_x_range)
+
+
+def check_input_int(str_int):
+    """Ensure the input can be converted to a positive integer.
+
+    Args:
+        str_int (string): the string input by user
+
+    Returns:
+        int: the integer format of the string
+    """
+    while not is_valid_int_pos(str_int):
+        str_int = input("   Please input a valid integer number: ")
+    return int(str_int)
+
+
+def check_input_float(str_float):
+    """Ensure the input can be converted to a positive float.
+
+    Args:
+        str_float (string): the string input by user
+
+    Returns:
+        float: the float format of the string
+    """
+    while not is_valid_float_pos(str_float):
+        str_float = input("   Please input a valid float number: ")
+    return float(str_float)
+
+
+def check_answer_y_n(answer): 
+    """Check if the input is 'y' or 'n'.
+
+    Args:
+        answer (string): the string input by a user
+
+    Returns:
+        string: 'y' or 'n'
+    """
+    while answer != 'y' and answer != 'n':
+        answer = input("\n   Please choose a valid answer: ")
+    return answer
+
+
 
 def input_file():
     """Get data in file(s) input by terminal.
@@ -49,24 +98,23 @@ def plot_2d_3d_figures(x, ys):
     plot_initial_2d(x, ys)
 
     figure_choice = input("\n   Plot the 3d figure? (y/n) ")
-    while figure_choice != 'y' and figure_choice != 'n':
-        figure_choice = input("\n   Please choose a valid answer: ")
-    if figure_choice == 'y':
+    if check_answer_y_n(figure_choice) == 'y':
         plot_initial_3d(x, ys)
 
     print_store_figures()
 
 
-def input_peak_range():
+def input_peak_range(x):
     """Read range input from terminal.
 
     Returns:
         array: shape of (1,2), lower and upper bound for x
     """
     print("\n4. Start fitting: ")
-    x_min, x_max = input("\n   Input the range for peaks (x): ").split(',')
-    x_range = np.array([float(x_min), float(x_max)])
-    return x_range
+    x_min, x_max = input("\n   Input the range for peaks (x), seperate the 2 numbers with ',': ").split(',')
+    while not is_valid_string_range(x, x_min, x_max):
+        x_min, x_max = input("\n   Please input valid range, e.g. 1.0,2.0: ").split(',')
+    return np.array([float(x_min), float(x_max)])
 
 
 def input_peak_num():
@@ -75,8 +123,8 @@ def input_peak_num():
     Returns:
         int: number of peaks
     """
-    peak_num = int(input("\n   Input number of peaks: "))
-    return peak_num
+    peak_num = input("\n   Input number of peaks: ")
+    return check_input_int(peak_num)
 
 
 def input_pear_par_guess(peak_num):
@@ -92,12 +140,12 @@ def input_pear_par_guess(peak_num):
     print("\n5. Input guess for parameters of peaks\n\n   5.1")
     for i in range(peak_num):
         print(f"\n   Peak {i+1} pars: ")
-        c = input("   center (x): ")
-        s = input("   sigma (characteristic width): ")
-        a = input("   amplitude (overall intensity or area of peak): ")
-        peak_par_guess[i][0] = float(c)
-        peak_par_guess[i][1] = float(s)
-        peak_par_guess[i][2] = float(a)
+        c = input("   (1) center (x): ")
+        peak_par_guess[i][0] = check_input_float(c)
+        s = input("   (2) sigma (characteristic width): ")
+        peak_par_guess[i][1] = check_input_float(s)
+        a = input("   (3) amplitude (overall intensity or area of peak): ")
+        peak_par_guess[i][2] = check_input_float(a)
     return peak_par_guess
 
 
@@ -109,11 +157,10 @@ def input_center_min():
     """
     center_min = 0
     min_choice = input("\n   5.2 Set a lower bound for the center? (y/n) ")
-    while min_choice != 'y' and min_choice != 'n':
-        min_choice = input("\n   Please choose a valid answer: ")
-    if min_choice == 'y':
-        center_min = float(input("\n   Input the lower bound for center: "))
-    return center_min
+    if check_answer_y_n(min_choice) == 'y':
+        center_min = input("\n   Input the lower bound for center: ")
+        center_min = check_input_float(center_min)
+    return float(center_min)
 
 
 def input_index():
@@ -124,7 +171,7 @@ def input_index():
     """
     index = input(
         "\n6. Choose a dataset to compare Gaussian, Lorentzian and Pseudo-Voigt Models: ")
-    return int(index)
+    return check_input_int(index)
 
 
 def input_directory():
@@ -135,9 +182,7 @@ def input_directory():
     """
     dir_choice = input(
         "\n   The default directory to store resulted data is 'output_files', do you want to change it? (y/n) ")
-    while dir_choice != 'y' and dir_choice != 'n':
-        dir_choice = input("\n   Please choose a valid answer: ")
-    if dir_choice == 'y':
+    if check_answer_y_n(dir_choice) == 'y':
         dir_path = input(
             "\n   Input a new directory path (Do not input '/' at the end.): ")
         return dir_path
@@ -153,9 +198,7 @@ def input_model():
     """
     model_choice = input(
         f"\n7. The default model is Gaussian Model, dou you want to change it? (y/n) ")
-    while model_choice != 'y' and model_choice != 'n':
-        model_choice = input("\n   Please choose a valid answer: ")
-    if model_choice == 'n':
+    if check_answer_y_n(model_choice) == 'n':
         return choose_model_with_str('Gaussian')
     else:
         model = input("\n   Choose a model with the first letter g/l/p: ")
@@ -175,8 +218,7 @@ def plot_changes(data_3d, dir_path):
     """
     summary_changes = input("\n8. Summarize changes along time? (y/n) ")
     if summary_changes == 'y':
-        # plot_fwhm, plot_intensity, tabulate_result
-        summarize_peaks(data_3d, dir_path)
+        summarize_peaks(data_3d, dir_path)  # plot fwhm, plot intensity, tabulate results
         print_store_figures()
 
 
@@ -194,7 +236,7 @@ def main():
     # ASCII_data
     x, ys = process_original_data(data)
     plot_2d_3d_figures(x, ys)
-    x_range = input_peak_range()
+    x_range = input_peak_range(x)
     # Input 1: 1,6.5
     # Input 2: 2,5
     peak_num = input_peak_num()
