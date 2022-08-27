@@ -66,21 +66,8 @@ def plot_initial_3d(x, ys):
     plt.show()
 
 
-def get_interval_indices(x, x_range):
-    """Find indices corresponding to the elements in the given range.
-
-    Args:
-        x (array): 1D.
-        x_range (array): shape of (1,2), including lower and upper bound
-
-    Returns:
-        array: indices for elements in given range
-    """
-    return np.where((x > x_range[0]) & (x < x_range[1]))[0]
-
-
 def get_interval_data(x, y, x_range):
-    """Find the elements of x and y in the given range. 
+    """Find x values in the given range, and corresponding y values. 
 
     Args:
         x (array): 1D array
@@ -91,7 +78,7 @@ def get_interval_data(x, y, x_range):
         array: elements of x in given range
         array: elements of y corresponding to x in range
     """
-    interval_indices = get_interval_indices(x, x_range)
+    interval_indices = np.where((x > x_range[0]) & (x < x_range[1]))[0]
     return x[interval_indices], y[interval_indices]
 
 
@@ -205,27 +192,6 @@ def get_pars(fit_result):
     return np.array(value), np.array(std_err)
 
 
-def fit_curve_with_baseline(Model, x, y, baseline, guess, center_min=0.0):
-    """For range of x, fit the peak with baseline. 
-
-    Args:
-        Model (function): model used to fit peaks
-        x (array): 1D, x values
-        y (array): 1D, y values
-        baseline(array): 1D, baseline for original curve
-        guess (array): 2D. Each row has 3 elements, corresponding to center, sigma and amplitude.
-        center_min (float, optional): the lower bound of center. Defaults to 0.
-
-    Returns:
-        array: the model results on the y-axis
-        class 'lmfit.minimizer.MinimizerResult': including the parameters and errors of the model fitting the peak best
-    """
-    baseline_subtracted = y - baseline
-    best_fit, fit_result = fit_curve(
-        Model, x, baseline_subtracted, guess, center_min)
-    return best_fit, fit_result
-
-
 def plot_fitting_results(i, x, y, baseline, best_fit):
     """Plot the fitting results with baseline and original curve.
 
@@ -248,35 +214,38 @@ def plot_fitting_results(i, x, y, baseline, best_fit):
     plt.close()
 
 
-def summarize_data3D(Model, x, ys, x_range, num, guess, center_min=0.0):
-    """Summerize the fitting results into an array. 
+def summarize_data3D(Model, x, ys, x_range, guess, center_min=0.0):
+    """Fit peaks with baseline and summerize the fitting results into an array. 
 
     Args:
         Model (function): model used to fit peaks
         x (array): x values
         ys (array): y datasets
         x_range (array): shape of (1,2), lower and upper bound
-        num (int): number of peaks
         guess (array): 2D array. Each row with 3 elements, center, sigma and amplitude.
         center_min (float, optional): the lower bound of center. Defaults to 0.
 
     Returns:
-        array: shape of (num, 11, len(ys))
+        array: shape of (len(guess), 11, len(ys))
             1st dimension: the peak focused on
             2nd dimension: time+amplitude+error+center+error+sigma+error+fwhm+error+height+error
             3rd dimension: current dataset
     """
     validate_x_range(x, x_range)
-    data_3d = np.zeros((num, 11, len(ys)))
+    data_3d = np.zeros((len(guess), 11, len(ys)))
     for i in range(len(ys)):
         print(f"\n{i}th dataset: ")
-        result_x, result_y = get_interval_data(x, ys[i], x_range)
-        baseline = get_baseline(result_y, 10000, 0.01)
-        best_fit, fit_result = fit_curve_with_baseline(Model, result_x, result_y, baseline,
-                                                       guess, center_min)
-        plot_fitting_results(i, result_x, result_y, baseline, best_fit)
+
+        interval_x, interval_y = get_interval_data(x, ys[i], x_range)
+        baseline = get_baseline(interval_y, 10000, 0.01)
+        baseline_subtracted = interval_y - baseline
+        best_fit, fit_result = fit_curve(
+            Model, interval_x, baseline_subtracted, guess, center_min)
+
+        plot_fitting_results(i, interval_x, interval_y, baseline, best_fit)
         pars_value, pars_stderr = get_pars(fit_result)
-        for j in range(num):
+
+        for j in range(len(guess)):
             data_3d[j][0][i] = i*10
             for k in range(5):
                 # store parameter values and their standard errors
@@ -466,18 +435,20 @@ def summarize_comparison(x, y, x_range, guess, center_min=0.0, dir_path='output_
         dir_path (str, optional): the directory to store the file. Defaults to 'output_files'.
     """
     validate_x_range(x, x_range)
-    result_x, result_y = get_interval_data(x, y, x_range)
+    interval_x, interval_y = get_interval_data(x, y, x_range)
     result_gauss, result_loren, result_voigt = compare_models(
-        result_x, result_y, guess, center_min)
-    data_2d = np.zeros((5, len(result_x)))  # time + pars_value + pars_stderr
-    data_2d[0] = result_x
-    data_2d[1] = result_y
+        interval_x, interval_y, guess, center_min)
+    data_2d = np.zeros((5, len(interval_x)))  # time + pars_value + pars_stderr
+    data_2d[0] = interval_x
+    data_2d[1] = interval_y
     data_2d[2] = result_gauss
     data_2d[3] = result_loren
     data_2d[4] = result_voigt
 
     tabulate_comparison(data_2d, dir_path)
     fit_index(data_2d)
-    plot_single_model_result(result_x, result_y, result_gauss, 'Gaussian')
-    plot_single_model_result(result_x, result_y, result_loren, 'Lorentzian')
-    plot_single_model_result(result_x, result_y, result_voigt, 'PseudoVoigt')
+    plot_single_model_result(interval_x, interval_y, result_gauss, 'Gaussian')
+    plot_single_model_result(interval_x, interval_y,
+                             result_loren, 'Lorentzian')
+    plot_single_model_result(interval_x, interval_y,
+                             result_voigt, 'PseudoVoigt')

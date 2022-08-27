@@ -258,7 +258,7 @@ def main():
     print_store_data(dir_path)
     Model = input_model()
     data_3d = summarize_data3D(
-        Model, x, ys, x_range, peak_num, peak_par_guess, center_min)
+        Model, x, ys, x_range, peak_par_guess, center_min)
     print_store_data(dir_path)
     print_store_figures()
     plot_changes(data_3d, dir_path)
