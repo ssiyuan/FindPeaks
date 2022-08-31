@@ -10,25 +10,7 @@ from scipy.sparse.linalg import spsolve
 from lmfit.models import GaussianModel, LorentzianModel, PseudoVoigtModel
 
 from import_files import check_output_dir
-from validation import (
-    validate_file_data,
-    validate_x_range)
-
-
-def process_original_data(file_data):
-    """Seperate the x values and datasets of y stored in input array.
-
-    Args:
-        file_data (array): 2D array, the first column storing x-axis, other columns storing y-axis.
-
-    Returns:
-        array: 1D
-        array: 2D, each row as a seperate dataset of y
-    """
-    validate_file_data(file_data)
-    x = file_data[0]  # 2-theta
-    ys = file_data[1:]  # intensity
-    return x, ys
+from validation import validate_x_range
 
 
 def plot_initial_2d(x, ys):
@@ -169,7 +151,7 @@ def check_stderr(stderr):
     try:
         err = float(stderr)
         return err
-    except ValueError:
+    except TypeError:
         return 0
 
 
@@ -189,6 +171,7 @@ def get_pars(fit_result):
         print(f"{name}: value={'%.6f'%float(par.value)}+/-{par.stderr}")
         value.append(float(par.value))
         std_err.append(check_stderr(par.stderr))
+    print("\n")
     return np.array(value), np.array(std_err)
 
 
@@ -255,21 +238,21 @@ def summarize_data3D(Model, x, ys, x_range, guess, center_min=0.0):
 
 
 def plot_fwhm(data_2d, i):
-    """Plot the figure showing changes in FXHM (for a peak)
+    """Plot the figure showing changes in FWHM (for a peak)
 
     Args:
         data_2d (array): shape of (11, len(ys)). Each row is for a parameter type, 
                         each column is for a dataset.
         i (int): index of peak, min as 0. Imported to name picture file.
     """
-    plt.title("Peak {} - Changes in FXHM".format(i+1))
+    plt.title("Peak {} - Changes in FWHM".format(i+1))
     plt.plot(data_2d[0], data_2d[7], 'k', linewidth=1.0)
     plt.errorbar(data_2d[0], data_2d[7], yerr=data_2d[8], fmt='o',
                  ecolor='tab:blue', color='tab:orange', elinewidth=1, capsize=1)
     plt.xlabel('Time (min)')
     plt.ylabel('Full Width at Half Maximum')
     check_output_dir('output_figures')
-    plt.savefig('output_figures/Peak{}_FXHM.png'.format(i+1))
+    plt.savefig('output_figures/Peak{}_FWHM.png'.format(i+1))
     plt.show()
 
 
@@ -400,7 +383,7 @@ def tabulate_comparison(data_2d, dir_path='output_files'):
 
 
 def fit_index(data_2d):
-    """Calculate the fit index for each model.
+    """Calculate the fit index for each model (Chi-Square).
 
     Args:
         data_2d (array): 2D. Each cols correspond to x, original y, y for Gaussian model,

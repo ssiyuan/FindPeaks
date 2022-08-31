@@ -4,10 +4,10 @@ from lmfit.models import GaussianModel
 
 from import_files import (
     read_csv_dat,
-    read_ascii_dir)
+    read_ascii_dir,
+    process_original_data)
 
 from analysis import (
-    process_original_data,
     plot_initial_2d,
     plot_initial_3d,
     choose_model_with_str,
@@ -21,16 +21,16 @@ def main():
     data = read_csv_dat("Test_Data/NH4OH-FAU-Practice-data.csv")
     x, ys = process_original_data(data)
     # plot_initial_3d(x, ys)
-    # plot_initial_2d(x, ys)
+    plot_initial_2d(x, ys)
     csv_guess1 = [6.35, 0.038, 0.00934]
     csv_guess2 = [1.8, 0.2, 0.003]
-    data_3d = summarize_data3D(GaussianModel, x,ys,[1,6.5],[csv_guess1,csv_guess2], center_min=1.7)    
+    data_3d = summarize_data3D(GaussianModel, x,ys,[1.2,6.5],[csv_guess1,csv_guess2], center_min=1.7)    
     summarize_peaks(data_3d)
-    summarize_comparison(x, ys[11], [1,6.5], [csv_guess1, csv_guess2],center_min=1.7)
+    summarize_comparison(x, ys[11], [1.2,6.5], [csv_guess1, csv_guess2],center_min=1.7)
 
 
     # # ASCII_data
-    # data = read_ascii_dir("ASCII_data")
+    # data = read_ascii_dir("test_ASCII_data")
     # x, ys = process_original_data(data)
     # # plot_initial_3d(x, ys)
     # # plot_initial_2d(x, ys)

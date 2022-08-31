@@ -10,6 +10,7 @@ import numpy as np
 
 from pathlib import Path
 from validation import (
+    validate_file_data,
     is_valid_file,
     is_valid_dir)
 
@@ -33,7 +34,6 @@ def read_csv_dat(file_path):
             file_reader = csv.reader(file, delimiter=",", quotechar='\"')
         elif file_type == '.dat':
             file_reader = csv.reader(file, delimiter="\t", quotechar='\"')
-
         for line in file_reader:
             data.append(line)
 
@@ -47,7 +47,7 @@ def read_ascii(file_path):
     """Read a file where data is stored in ASCII format and transpose the data. """
     is_valid_file(file_path)
     with codecs.open(file_path, mode="r", encoding="utf-8-sig") as file:
-        data_set = np.loadtxt(file, skiprows=25, dtype=float)
+        data_set = np.loadtxt(file, skiprows=26, dtype=float)
         return data_set.transpose()
 
 
@@ -121,3 +121,19 @@ def check_output_dir(dir_path):
     check_dir_end(dir_path)
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
+
+
+def process_original_data(file_data):
+    """Seperate the x values and datasets of y stored in input array.
+
+    Args:
+        file_data (array): 2D array, the first column storing x-axis, other columns storing y-axis.
+
+    Returns:
+        array: 1D
+        array: 2D, each row as a seperate dataset of y
+    """
+    validate_file_data(file_data)
+    x = file_data[0]  # 2-theta
+    ys = file_data[1:]  # intensity
+    return x, ys
