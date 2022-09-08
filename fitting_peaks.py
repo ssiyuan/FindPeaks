@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from scipy import sparse
+from mpl_toolkits.mplot3d import Axes3D
 from scipy.sparse.linalg import spsolve
 from lmfit.models import GaussianModel, LorentzianModel, PseudoVoigtModel
 
@@ -14,35 +15,44 @@ from validation import validate_x_range
 
 
 def plot_initial_2d(x, ys):
-    """Draw a 2D figure. 
+    """Draw a 2D figure. Use q instead of intensity as x, and use log(intensity) instead 
+    of intensity as y.
 
     Args:
         x (array): 1D.
-        ys (array): 2D array, each row as a seperate dataset of y
+        ys (array): 2D array, each row as a seperate dataset of y.
     """
+    plt.title('2D Figure',weight='bold')
+    plt.xlabel('q ($nm^{-1}$)',weight='bold')
+    plt.ylabel('Intensity ($cm^{-1}$)',weight='bold')
     for i in range(ys.shape[0]):
-        plt.plot(x, ys[i], linewidth=0.6)
-    plt.xlabel('2-theta')
-    plt.ylabel('Intensity')
+        plt.plot(x, ys[i], linewidth=1.0)
     check_output_dir('output_figures')
     plt.savefig('output_figures/Initial_2d.png')
     plt.show()
 
 
-def plot_initial_3d(x, ys):
-    """Plot a 3D figure.
+def plot_initial_3d(x, ys, index_min=0, index_max=610):
+    """Plot a 3D figure. Use q instead of intensity as x, and use log(intensity) instead 
+    of intensity as y.
 
     Args:
         x (array): 1D.
-        ys (array): 2D array, each row as a seperate dataset of y
+        ys (array): 2D array, each row as a seperate dataset of y.
+        index_min (int): lower bound for index. Default as 0.
+        index_max (int): higner bound for index. Default as 620 OR the largest index of array.
     """
-    ax = plt.axes(projection='3d')
+    if index_max > len(x):
+        index_max = len(x)
+    fig = plt.figure()
+    ax = Axes3D(fig)
+    ax.set_xlabel('q ($nm^{-1}$)',fontweight='bold')
     for i in range(len(ys)):
-        z = np.ones(len(ys[0]))*10*i  # time = dataset_index * 10
-        ax.plot3D(x, z, ys[i])
-    ax.set_xlabel('q ($nm^{-1}$)')
-    ax.set_ylabel('Time (min)')
-    ax.set_zlabel('Intensity ($cm^{-1}$)')
+        time = np.ones(len(ys[0]))*10*(i+1)  # time = (dataset_index+1) * 10
+        ax.plot3D(x[index_min:index_max], time[index_min:index_max], ys[i][index_min:index_max], 'k') 
+    ax.set_ylabel('Time (min)',fontweight='bold')
+    ax.set_zlabel('I ($cm^{-1}$)',fontweight='bold')
+    ax.set_title('3D Figure', fontweight='bold')
     check_output_dir('output_figures')
     plt.savefig('output_figures/Initial_3d.png')
     plt.show()
@@ -112,30 +122,29 @@ def fit_curve(Model, x, y, initial_guess, center_min=0.0):
     return out.best_fit, out.result
 
 
-# There is an algorithm called "Asymmetric Least Squares Smoothing" by P.
-# Eilers and H. Boelens in 2005. The paper is free and you can find it on
-# google.
-def get_baseline(y, lam, p, niter=10):
-    """_summary_
+# Algorithm of "Asymmetric Least Squares Smoothing" by P. Eilers and H. Boelens in 2005.
+def get_baseline(y, lam, p, iter_num=10):
+    """Generate a baseline for an input y set.
 
     Args:
-        y (array): y values
-        lam (_type_): _description_
-        p (_type_): _description_
-        niter (int, optional): _description_. Defaults to 10.
+        y (array): 1D, y values
+        lam (int): smoothness, 10^2 <= λ <= 10^9
+        p (float): wheighting deviations
+        iter_num (int, optional): times for iterations. Defaults to 10.
 
     Returns:
-        _type_: _description_
+        array: 1D, the baseline
     """
-    L = len(y)
-    D = sparse.csc_matrix(np.diff(np.eye(L), 2))
-    w = np.ones(L)
-    for i in range(niter):
-        W = sparse.spdiags(w, 0, L, L)
+    length = len(y)
+    diag = np.eye(length)
+    w = np.ones(length)
+    D = sparse.csc_matrix(np.diff(diag, 2))
+    for i in range(iter_num):
+        W = sparse.spdiags(w, 0, length, length)
         Z = W + lam * D.dot(D.transpose())
-        z = spsolve(Z, w*y)
-        w = p * (y > z) + (1-p) * (y < z)
-    return z
+        baseline = spsolve(Z, w*y)
+        w = p * (y > baseline) + (1-p) * (y < baseline)
+    return baseline
 
 
 def check_stderr(stderr):
@@ -168,10 +177,10 @@ def get_pars(fit_result):
     value = []
     std_err = []
     for name, par in fit_result.params.items():
-        print(f"{name}: value={'%.6f'%float(par.value)}+/-{par.stderr}")
+        # print(f"{name}: value={'%.6f'%float(par.value)}+/-{par.stderr}")
         value.append(float(par.value))
         std_err.append(check_stderr(par.stderr))
-    print("\n")
+    # print("\n")
     return np.array(value), np.array(std_err)
 
 
@@ -185,13 +194,16 @@ def plot_fitting_results(i, x, y, baseline, best_fit):
         baseline (array): 1D
         best_fit (array): 1D, the fitting result of the original data subtracting baseline
     """
-    plt.title(f"{i}-th dataset")
-    plt.plot(x, baseline, '-', c='tab:blue', label='baseline', linewidth=1)
-    plt.plot(x, y, '--', c='k', label='original data')
-    label_bs = 'subtracted baseline'
-    plt.plot(x, y - baseline, '--', c='tab:green', label=label_bs)
-    plt.plot(x, best_fit, '-', c='tab:red', label='fit curve')
+    plt.title(f"{i}-th Dataset",weight='bold')
+    plt.rcParams.update({'font.weight': 'bold'})
+    plt.plot(x, baseline, '-', c='tab:blue', label='Baseline', linewidth=1)
+    plt.plot(x, y, '--', c='k', label='Original Data', linewidth=1)
+    label_bs = 'Subtracted Baseline'
+    plt.plot(x, y - baseline, '--', c='tab:green', label=label_bs, linewidth=1)
+    plt.plot(x, best_fit, '-', c='tab:red', label='Fit Curve', linewidth=1)
     plt.legend()
+    plt.xlabel('q ($nm^{-1}$)',weight='bold')
+    plt.ylabel('Intensity ($cm^{-1}$)',weight='bold')
     check_output_dir('output_figures')
     plt.savefig('output_figures/Dataset_{}.png'.format(i))
     plt.close()
@@ -215,21 +227,20 @@ def summarize_data3D(Model, x, ys, x_range, guess, center_min=0.0):
             3rd dimension: current dataset
     """
     validate_x_range(x, x_range)
+
     data_3d = np.zeros((len(guess), 11, len(ys)))
     for i in range(len(ys)):
-        print(f"\n{i}th dataset: ")
-
+        # print(f"\n{i}th dataset: ")
         interval_x, interval_y = get_interval_data(x, ys[i], x_range)
         baseline = get_baseline(interval_y, 10000, 0.01)
         baseline_subtracted = interval_y - baseline
         best_fit, fit_result = fit_curve(
             Model, interval_x, baseline_subtracted, guess, center_min)
-
         plot_fitting_results(i, interval_x, interval_y, baseline, best_fit)
         pars_value, pars_stderr = get_pars(fit_result)
 
         for j in range(len(guess)):
-            data_3d[j][0][i] = i*10
+            data_3d[j][0][i] = i
             for k in range(5):
                 # store parameter values and their standard errors
                 data_3d[j][2*(k+1)-1][i] = '%.6f' % float(pars_value[k+j*5])
@@ -245,31 +256,51 @@ def plot_fwhm(data_2d, i):
                         each column is for a dataset.
         i (int): index of peak, min as 0. Imported to name picture file.
     """
-    plt.title("Peak {} - Changes in FWHM".format(i+1))
-    plt.plot(data_2d[0], data_2d[7], 'k', linewidth=1.0)
-    plt.errorbar(data_2d[0], data_2d[7], yerr=data_2d[8], fmt='o',
+    plt.title("Peak {} - Changes in FWHM".format(i+1),weight='bold')
+    plt.plot(data_2d[0]*10, data_2d[7], 'k', linewidth=1.0)
+    plt.errorbar(data_2d[0]*10, data_2d[7], yerr=data_2d[8], fmt='o',
                  ecolor='tab:blue', color='tab:orange', elinewidth=1, capsize=1)
-    plt.xlabel('Time (min)')
-    plt.ylabel('Full Width at Half Maximum')
+    plt.xlabel('Time (min)',weight='bold')
+    plt.ylabel('Full Width at Half Maximum',weight='bold')
     check_output_dir('output_figures')
     plt.savefig('output_figures/Peak{}_FWHM.png'.format(i+1))
     plt.show()
 
 
-def plot_intensity(data_2d, i):
-    """Plot the figure showing changes in Intendity (for a peak). 
+def plot_amplitude(data_2d, i):
+    """Plot the figure showing changes in amplitude (for a peak), representing 
+    area of a peak. 
 
     Args:
         data_2d (array): shape of (11, len(ys)). Each row is for a parameter type, 
                         each column is for a dataset.
         i (int): index of peak, min as 0. Imported to name picture file.
     """
-    plt.title("Peak {} - Changes in Intensity".format(i+1))
-    plt.plot(data_2d[0], data_2d[9], 'k', linewidth=1.0)
-    plt.errorbar(data_2d[0], data_2d[9], yerr=data_2d[10], fmt='o',
+    plt.title("Peak {} - Changes in Peak Area".format(i+1),weight='bold')
+    plt.plot(data_2d[0]*10, data_2d[1], 'k', linewidth=1.0)
+    plt.errorbar(data_2d[0]*10, data_2d[1], yerr=data_2d[2], fmt='o',
                  ecolor='tab:blue', color='tab:orange', elinewidth=1, capsize=1)
-    plt.xlabel('Time (min)')
-    plt.ylabel('Intensity')
+    plt.xlabel('Time (min)',weight='bold')
+    plt.ylabel('Peak Area',weight='bold')
+    check_output_dir('output_figures')
+    plt.savefig('output_figures/Peak{}_PeakArea.png'.format(i+1))
+    plt.show()
+
+
+def plot_intensity(data_2d, i):
+    """Plot the figure showing changes in peak height.
+
+    Args:
+        data_2d (array): shape of (11, len(ys)). Each row is for a parameter type, 
+                        each column is for a dataset.
+        i (int): index of peak, min as 0. Imported to name picture file.
+    """
+    plt.title("Peak {} - Changes in Intensity".format(i+1),weight='bold')
+    plt.plot(data_2d[0]*10, data_2d[9], 'k', linewidth=1.0)
+    plt.errorbar(data_2d[0]*10, data_2d[9], yerr=data_2d[10], fmt='o',
+                 ecolor='tab:blue', color='tab:orange', elinewidth=1, capsize=1)
+    plt.xlabel('Time (min)',weight='bold')
+    plt.ylabel('Intensity ($cm^{-1}$)',weight='bold')
     check_output_dir('output_figures')
     plt.savefig('output_figures/Peak{}_Intensity.png'.format(i+1))
     plt.show()
@@ -287,7 +318,7 @@ def tabulate_result(data_2d, i, dir_path='output_files'):
     check_output_dir(dir_path)
     # convert to same format as input file
     output_data = np.array(data_2d).transpose()
-    header = ['TIME', 'AMPLITUDE', 'STD_ERR', 'CENTER', 'STD_ERR', 'SIGMA', 'STD_ERR', 'FWHM',
+    header = ['Dataset Index', 'AMPLITUDE', 'STD_ERR', 'CENTER', 'STD_ERR', 'SIGMA', 'STD_ERR', 'FWHM',
               'STD_ERR', 'HEIGHT', 'STD_ERR']
 
     with open(f"{dir_path}/Peak_{i+1}_Result.csv", "w", encoding="utf-8") as fp:
@@ -312,6 +343,7 @@ def summarize_peaks(data_3d, dir_path='output_files'):
     """
     for i in range(len(data_3d)):
         plot_fwhm(data_3d[i], i)
+        plot_amplitude(data_3d[i], i)
         plot_intensity(data_3d[i], i)
         tabulate_result(data_3d[i], i, dir_path)
 
@@ -345,7 +377,7 @@ def compare_models(x, y, guess, center_min=0.0):
     return result_gauss, result_loren, result_pseudo
 
 
-def plot_single_model_result(x, y, model_result, model_str):
+def plot_single_model(x, y, model_result, model_str):
     """Plot a single model with the error.
 
     Args:
@@ -354,14 +386,20 @@ def plot_single_model_result(x, y, model_result, model_str):
         model_result (array): 1D, best fitting result
         model_str (string): name of the model
     """
-    plt.title(f"{model_str} Result")
-    plt.plot(x, y, '--', c='k', label='Original Data')
-    plt.plot(x, model_result, '-', label='{}'.format(model_str))
-    plt.plot(x, abs(model_result-y), '-', label='error')
+    plot_setting()
+    plt.title(f"{model_str} Result",size=50,weight='bold')
+    plt.rcParams.update({'font.size': 40})
+    plt.rcParams.update({'font.weight': 'bold'})
+    plt.plot(x, y, '--', c='k', label='Original Data', linewidth=4.0)
+    plt.plot(x, model_result, '-', label='{}'.format(model_str), linewidth=4.0)
+    plt.plot(x, abs(model_result-y), '-', label='Error', linewidth=4.0)
     plt.legend()
+    plt.xlabel('2-theta',size=50,weight='bold')
+    plt.ylabel('Intensity',size=50,weight='bold')
     check_output_dir('output_figures')
     plt.savefig('output_figures/Comparison_{}.png'.format(model_str))
-    plt.show()
+    # plt.show()
+    plt.close()
 
 
 def tabulate_comparison(data_2d, dir_path='output_files'):
@@ -403,6 +441,7 @@ def fit_index(data_2d):
     print(f"\nFit index for Gaussian: {fit_indices[0]}")
     print(f"Fit index for Lorentzian: {fit_indices[1]}")
     print(f"Fit index for Pseudo-Voigt: {fit_indices[2]}")
+    
     return fit_indices
 
 
@@ -430,8 +469,14 @@ def summarize_comparison(x, y, x_range, guess, center_min=0.0, dir_path='output_
 
     tabulate_comparison(data_2d, dir_path)
     fit_index(data_2d)
-    plot_single_model_result(interval_x, interval_y, result_gauss, 'Gaussian')
-    plot_single_model_result(interval_x, interval_y,
+    plot_single_model(interval_x, interval_y, result_gauss, 'Gaussian')
+    plot_single_model(interval_x, interval_y,
                              result_loren, 'Lorentzian')
-    plot_single_model_result(interval_x, interval_y,
+    plot_single_model(interval_x, interval_y,
                              result_voigt, 'PseudoVoigt')
+
+
+def form_mesopore(data_3d): 
+    extent = data_3d[1][1]/data_3d[0][1]
+    print(f"\nThe extent of mesopore formation is: \n{extent}. \n")
+    return extent

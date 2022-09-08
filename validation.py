@@ -102,3 +102,4 @@ def is_valid_float(str_float):
 
 def is_valid_float_pos(str_float):
     return is_valid_float(str_float) and float(str_float) > 0
+

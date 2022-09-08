@@ -5,6 +5,7 @@ folder only including ASCII files.
 import csv
 import codecs
 import os
+import math
 
 import numpy as np
 
@@ -43,11 +44,11 @@ def read_csv_dat(file_path):
     return data_needed
 
 
-def read_ascii(file_path):
+def read_ascii(file_path, start_line = 26):
     """Read a file where data is stored in ASCII format and transpose the data. """
     is_valid_file(file_path)
     with codecs.open(file_path, mode="r", encoding="utf-8-sig") as file:
-        data_set = np.loadtxt(file, skiprows=26, dtype=float)
+        data_set = np.loadtxt(file, skiprows=start_line, dtype=float)
         return data_set.transpose()
 
 
@@ -60,7 +61,7 @@ def check_dir_end(dir_path):
         return check_dir_end(dir_path)
 
 
-def read_ascii_files(file_paths):
+def read_ascii_files(file_paths, start_line=26):
     """Read ASCII files. 
 
     Args:
@@ -75,7 +76,7 @@ def read_ascii_files(file_paths):
     # Use i to check the index of current file, store the first column as x
     # only when i = 0
     for file_path in file_paths:
-        data_read = read_ascii(file_path)
+        data_read = read_ascii(file_path, start_line)
         if i == 0:
             data.append(data_read[0])  # x
         data.append(data_read[1])  # y-s
@@ -123,6 +124,37 @@ def check_output_dir(dir_path):
         os.makedirs(dir_path)
 
 
+def get_q(x, wavelength=0.15406):
+    """Calculate q with 2-theta.
+
+    Args:
+        x (array): 1D array for 2-theta
+        wavelength (float): Defaults to 0.15406, the wavelength of Cu-Kα source.
+
+    Returns:
+        array: q = 4 * pi * sin(theta) / wavelength
+    """    
+    radians = np.deg2rad(0.5*x)
+    return 4 * math.pi * np.sin(radians) / wavelength
+
+
+def log_ys(ys):
+    """Get the log format for input 2D array.
+
+    Args:
+        ys (array): 2D array
+
+    Returns:
+        array: 2D array for log values of input
+    """
+    log_y = np.zeros((len(ys),len(ys[0])))
+    for i in range(len(ys)):
+        curr_y = ys[i]
+        curr_y[curr_y==0] = 0.00001
+        log_y[i] = np.log(curr_y)
+    return log_y
+
+
 def process_original_data(file_data):
     """Seperate the x values and datasets of y stored in input array.
 
@@ -130,10 +162,10 @@ def process_original_data(file_data):
         file_data (array): 2D array, the first column storing x-axis, other columns storing y-axis.
 
     Returns:
-        array: 1D
-        array: 2D, each row as a seperate dataset of y
+        array: 1D, transfer 2-theta to q
+        array: 2D, each row as a seperate dataset of y, transfer to log(y)
     """
     validate_file_data(file_data)
-    x = file_data[0]  # 2-theta
-    ys = file_data[1:]  # intensity
+    x = get_q(file_data[0])  # 2-theta to q
+    ys = log_ys(file_data[1:])  # log format of intensity
     return x, ys

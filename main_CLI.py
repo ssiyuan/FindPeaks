@@ -5,7 +5,7 @@ from import_files import (
     read_ascii_dir,
     process_original_data)
 
-from analysis import (
+from fitting_peaks import (
     plot_initial_2d,
     plot_initial_3d,
     choose_model_with_str,
@@ -16,8 +16,7 @@ from analysis import (
 from validation import (
     is_valid_int_pos,
     is_valid_float_pos,
-    is_valid_string_range,
-    validate_x_range)
+    is_valid_string_range)
 
 
 def check_input_int(str_int):
@@ -48,7 +47,7 @@ def check_input_float(str_float):
     return float(str_float)
 
 
-def check_answer_y_n(answer): 
+def check_answer_y_n(answer):
     """Check if the input is 'y' or 'n'.
 
     Args:
@@ -58,9 +57,27 @@ def check_answer_y_n(answer):
         string: 'y' or 'n'
     """
     while answer != 'y' and answer != 'n':
-        answer = input("\n   Please choose a valid answer: ")
+        answer = input(
+            "\n   Please choose a valid answer between 'y' and 'n': ")
     return answer
 
+
+def check_answer_unit(x_unit_choice):
+    """Check if the input is '1' or '2'.
+
+    Args:
+        x_unit_choice (string): the char input by user
+
+    Returns:
+        string: '2-theta' if input '1', or 'q' for the input of '2'
+    """
+    while x_unit_choice != '1' and x_unit_choice != '2':
+        x_unit_choice = input(
+            "\n   Please choose a valid answer between '1' and '2': ")
+    if x_unit_choice == '1':
+        return '2-theta'
+    else:
+        return 'q'
 
 
 def input_file():
@@ -94,13 +111,14 @@ def plot_2d_3d_figures(x, ys):
         x (array): 1D
         ys (array): 2D, y datasets
     """
-    print("\n3. Plot the 2d figure: ")
-    plot_initial_2d(x, ys)
-
-    figure_choice = input("\n   Plot the 3d figure? (y/n) ")
+    x_unit_choice = input(
+        "\n3. Select unit of x. (1. $2\theta$ 2. $q$) (INPUT 1 OR 2) ")
+    x_unit_choice = check_answer_unit(x_unit_choice)
+    print("   Plot the 2d figure: ")
+    plot_initial_2d(x, ys, x_unit=x_unit_choice)
+    figure_choice = input("   Plot the 3d figure? (y/n) ")
     if check_answer_y_n(figure_choice) == 'y':
-        plot_initial_3d(x, ys)
-
+        plot_initial_3d(x, ys, x_unit=x_unit_choice)
     print_store_figures()
 
 
@@ -111,9 +129,11 @@ def input_peak_range(x):
         array: shape of (1,2), lower and upper bound for x
     """
     print("\n4. Start fitting: ")
-    x_min, x_max = input("\n   Input the range for peaks (x), seperate the 2 numbers with ',': ").split(',')
+    x_min, x_max = input(
+        "   Input the range for peaks (x), seperate the 2 numbers with ',': ").split(',')
     while not is_valid_string_range(x, x_min, x_max):
-        x_min, x_max = input("\n   Please input valid range, e.g. 1.0,2.0: ").split(',')
+        x_min, x_max = input(
+            "   Please input valid range, e.g. 1.0,2.0: ").split(',')
     return np.array([float(x_min), float(x_max)])
 
 
@@ -123,7 +143,7 @@ def input_peak_num():
     Returns:
         int: number of peaks
     """
-    peak_num = input("\n   Input number of peaks: ")
+    peak_num = input("   Input number of peaks: ")
     return check_input_int(peak_num)
 
 
@@ -137,7 +157,7 @@ def input_pear_par_guess(peak_num):
         array: shape of (peak_num, 3), each row for guess of parameters
     """
     peak_par_guess = np.zeros((peak_num, 3))
-    print("\n5. Input guess for parameters of peaks\n\n   5.1")
+    print("\n5. Input guess for parameters of peaks")
     for i in range(peak_num):
         print(f"\n   Peak {i+1} pars: ")
         c = input("   (1) center (x): ")
@@ -156,21 +176,21 @@ def input_center_min():
         float: lower bound for peak center
     """
     center_min = 0
-    min_choice = input("\n   5.2 Set a lower bound for the center? (y/n) ")
+    min_choice = input("\n   Set a lower bound for the center? (y/n) ")
     if check_answer_y_n(min_choice) == 'y':
-        center_min = input("\n   Input the lower bound for center: ")
+        center_min = input("   Input the lower bound for center: ")
         center_min = check_input_float(center_min)
     return float(center_min)
 
 
 def input_index():
-    """Read an index from terminal.
+    """Read an index from terminal. The chosen dataset need to have all peaks. 
 
     Returns:
         int: an index of dataset
     """
     index = input(
-        "\n6. Choose a dataset to compare Gaussian, Lorentzian and Pseudo-Voigt Models: ")
+        "\n6. Choose a dataset to compare Gaussian, Lorentzian and Pseudo-Voigt Models. Input the index: ")
     return check_input_int(index)
 
 
@@ -181,10 +201,10 @@ def input_directory():
         string (the path to store file) OR 1 (if no input path)
     """
     dir_choice = input(
-        "\n   The default directory to store resulted data is 'output_files', do you want to change it? (y/n) ")
+        "   The default directory to store resulted data is 'output_files', do you want to change it? (y/n) ")
     if check_answer_y_n(dir_choice) == 'y':
         dir_path = input(
-            "\n   Input a new directory path (Do not input '/' at the end.): ")
+            "   Input a new directory path (Do not input '/' at the end.): ")
         return dir_path
     else:
         return 'output_files'
@@ -201,9 +221,9 @@ def input_model():
     if check_answer_y_n(model_choice) == 'n':
         return choose_model_with_str('Gaussian')
     else:
-        model = input("\n   Choose a model with the first letter g/l/p: ")
+        model = input("   Choose a model with the first letter g/l/p: ")
         while choose_model_with_str(model) == 1:
-            model = input("\n   The input is invalid. Use the first letter: ")
+            model = input("   The input is invalid. Use the first letter: ")
         Model = choose_model_with_str(model)
         return Model
 
@@ -218,40 +238,41 @@ def plot_changes(data_3d, dir_path):
     """
     summary_changes = input("\n8. Summarize changes along time? (y/n) ")
     if summary_changes == 'y':
-        summarize_peaks(data_3d, dir_path)  # plot fwhm, plot intensity, tabulate results
+        # plot fwhm, plot intensity, tabulate results
+        summarize_peaks(data_3d, dir_path)
         print_store_figures()
 
 
 def print_store_data(dir_path):
-    print(f"\nThe resulted data have been stored in folder '{dir_path}'. ")
+    print(f"   The resulted data have been stored in folder '{dir_path}'. ")
 
 
 def print_store_figures():
-    print("\nThe resulted figures have been stored in folder 'output_figures'. ")
+    print("   The resulted figures have been stored in folder 'output_figures'. ")
 
 
 def main():
     data = input_file()
-    # test_data/NH4OH-FAU-Practice-data.csv
-    # ASCII_data
+    # Number input: test_data/NH4OH-FAU-Practice-data.csv
+    #  ASCII input: test_data/ASCII_data
     x, ys = process_original_data(data)
     plot_2d_3d_figures(x, ys)
     x_range = input_peak_range(x)
-    # Input 1: 1,6.5
-    # Input 2: 2,5
+    # Number input: 1,6.5
+    #  ASCII input: 2,5
     peak_num = input_peak_num()
-    # Input 1: 2
-    # Input 2: 3
+    # Number input: 2
+    #  ASCII input: 3
     peak_par_guess = input_pear_par_guess(peak_num)
-    # Input 1: 6.35 0.038 0.00934
-    # 1.8 0.2 0.003
-    # Input 2: 4.5 0.07 1.2
-    # 3.82 0.07 1.13
-    # 2.4 0.038 0.3
+    # Number input: 6.35 0.038 0.00934
+    #               1.8 0.2 0.003
+    #  ASCII input: 4.5 0.07 1.2
+    #               3.82 0.07 1.13
+    #               2.4 0.038 0.3
     center_min = input_center_min()
-    index = input_index()  # the index of a data set with all peaks needed
-    # Input 1: 11
-    # Input 2: 8
+    index = input_index()
+    # Number input: 11
+    #  ASCII input: 8
     dir_path = input_directory()
     summarize_comparison(x, ys[index], x_range,
                          peak_par_guess, center_min, dir_path)
@@ -262,6 +283,7 @@ def main():
     print_store_data(dir_path)
     print_store_figures()
     plot_changes(data_3d, dir_path)
+    print("\n")
 
 
 if __name__ == "__main__":
