@@ -27,7 +27,7 @@ pip3 install lmfit
 Below shows the operating process and examples of input:
 ![image](https://github.com/ssiyuan/FindPeaks/blob/main/readme_images/CLI.png)
 
-In the fitting progress, the initial guess for peaks center are very important. Take the 5-peak fitting in range [1.4, 6] for example, by observing 2d fugure of input data, guess for peak center can be set as 5.9, 5.3, 4.5, 3.9 and 2.3. In the terminal, the progress for this step should be like:
+In the fitting progress, the initial guess for peaks center are very important. Take the 5-peak fitting in range [1.4, 6.5] for example, by observing 2d fugure of input data, guess for peak center can be set as 5.9, 5.3, 4.5, 3.9 and 2.3. In the terminal, the progress for this step should be like:
 ![image](https://github.com/ssiyuan/FindPeaks/blob/main/readme_images/input_example_ascii.png)
 
 In this way an accurate fitting result can be generated (shown below). 
