@@ -177,10 +177,10 @@ def get_pars(fit_result):
     value = []
     std_err = []
     for name, par in fit_result.params.items():
-        # print(f"{name}: value={'%.6f'%float(par.value)}+/-{par.stderr}")
+        print(f"{name}: value={'%.6f'%float(par.value)}+/-{par.stderr}")
         value.append(float(par.value))
         std_err.append(check_stderr(par.stderr))
-    # print("\n")
+    print("\n")
     return np.array(value), np.array(std_err)
 
 
