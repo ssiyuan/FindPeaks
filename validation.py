@@ -42,9 +42,11 @@ def validate_x_range(x, x_range):
     if isinstance(x_range, list):
         x_range = np.array(x_range)
     if x_range.shape != (2,):
-        raise ValueError(f"The input x_range should have shape of (2,): {x_range}. ")
+        raise ValueError(
+            f"The input x_range should have shape of (2,): {x_range}. ")
     if x_range[0] > x_range[1]:
-        raise ValueError(f"The input x_range should have smaller value as first element, and larger one as second: {x_range}. ")
+        raise ValueError(
+            f"The input x_range should have smaller value as first element, and larger one as second: {x_range}. ")
     if x_range[0] < min(x) or x_range[1] > max(x):
         raise ValueError(f"The input range is inappropriate: {x_range}. ")
 
@@ -73,7 +75,7 @@ def is_valid_int(str_int):
     Returns:
         bool: True if can be converted to integer, else False. 
     """
-    try: 
+    try:
         int(str_int)
         return True
     except ValueError:
@@ -82,7 +84,7 @@ def is_valid_int(str_int):
 
 def is_valid_int_pos(str_int):
     return is_valid_int(str_int) and int(str_int) > 0
-        
+
 
 def is_valid_float(str_float):
     """Check if the input can be converted to a positive float.
@@ -93,7 +95,7 @@ def is_valid_float(str_float):
     Returns:
         bool: True if can be converted to float, else False. 
     """
-    try: 
+    try:
         float(str_float)
         return True
     except ValueError:
@@ -103,3 +105,6 @@ def is_valid_float(str_float):
 def is_valid_float_pos(str_float):
     return is_valid_float(str_float) and float(str_float) > 0
 
+
+def is_valid_x_unit(x_unit):
+    return (x_unit == '2theta') or (x_unit == 'q') or (x_unit == '1') or ((x_unit == '2'))

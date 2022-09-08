@@ -16,7 +16,8 @@ from fitting_peaks import (
 from validation import (
     is_valid_int_pos,
     is_valid_float_pos,
-    is_valid_string_range)
+    is_valid_string_range,
+    is_valid_x_unit)
 
 
 def check_input_int(str_int):
@@ -62,24 +63,6 @@ def check_answer_y_n(answer):
     return answer
 
 
-def check_answer_unit(x_unit_choice):
-    """Check if the input is '1' or '2'.
-
-    Args:
-        x_unit_choice (string): the char input by user
-
-    Returns:
-        string: '2-theta' if input '1', or 'q' for the input of '2'
-    """
-    while x_unit_choice != '1' and x_unit_choice != '2':
-        x_unit_choice = input(
-            "\n   Please choose a valid answer between '1' and '2': ")
-    if x_unit_choice == '1':
-        return '2-theta'
-    else:
-        return 'q'
-
-
 def input_file():
     """Get data in file(s) input by terminal.
 
@@ -111,14 +94,11 @@ def plot_2d_3d_figures(x, ys):
         x (array): 1D
         ys (array): 2D, y datasets
     """
-    x_unit_choice = input(
-        "\n3. Select unit of x. (1. $2\theta$ 2. $q$) (INPUT 1 OR 2) ")
-    x_unit_choice = check_answer_unit(x_unit_choice)
-    print("   Plot the 2d figure: ")
-    plot_initial_2d(x, ys, x_unit=x_unit_choice)
+    print("\n3. Plot the 2d figure: ")
+    plot_initial_2d(x, ys)
     figure_choice = input("   Plot the 3d figure? (y/n) ")
     if check_answer_y_n(figure_choice) == 'y':
-        plot_initial_3d(x, ys, x_unit=x_unit_choice)
+        plot_initial_3d(x, ys)
     print_store_figures()
 
 
@@ -157,7 +137,8 @@ def input_pear_par_guess(peak_num):
         array: shape of (peak_num, 3), each row for guess of parameters
     """
     peak_par_guess = np.zeros((peak_num, 3))
-    print("\n5. Input guess for parameters of peaks")
+    print("\n5. Guess model parameters for peaks based on the 2d/3d figure. ")
+    print("   (The 2d figure was stored in folder 'output_figures'.)")
     for i in range(peak_num):
         print(f"\n   Peak {i+1} pars: ")
         c = input("   (1) center (x): ")
@@ -251,24 +232,33 @@ def print_store_figures():
     print("   The resulted figures have been stored in folder 'output_figures'. ")
 
 
+def input_x_unit():
+    unit = input("\n   Select the unit for x (1. 2theta OR 2. q): ")
+    while not is_valid_x_unit(unit):
+        unit = input("   Please input a useful answer (1 or 2): ")
+
+
 def main():
     data = input_file()
     # Number input: test_data/NH4OH-FAU-Practice-data.csv
     #  ASCII input: test_data/ASCII_data
-    x, ys = process_original_data(data)
+    unit = input_x_unit()
+    x, ys = process_original_data(data, unit)
     plot_2d_3d_figures(x, ys)
     x_range = input_peak_range(x)
-    # Number input: 1,6.5
-    #  ASCII input: 2,5
+    # Number input: 1,   6.5
+    #  ASCII input: 1.4, 6.4
     peak_num = input_peak_num()
     # Number input: 2
-    #  ASCII input: 3
+    #  ASCII input: 5
     peak_par_guess = input_pear_par_guess(peak_num)
     # Number input: 6.35 0.038 0.00934
-    #               1.8 0.2 0.003
-    #  ASCII input: 4.5 0.07 1.2
-    #               3.82 0.07 1.13
-    #               2.4 0.038 0.3
+    #               1.8  0.2   0.003
+    #  ASCII input: 5.9  0.01  1
+    #               5.3  0.01  1    
+    #               4.5  0.01  1
+    #               3.9  0.01  1
+    #               2.3  0.01  1
     center_min = input_center_min()
     index = input_index()
     # Number input: 11

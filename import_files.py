@@ -13,7 +13,8 @@ from pathlib import Path
 from validation import (
     validate_file_data,
     is_valid_file,
-    is_valid_dir)
+    is_valid_dir,
+    is_valid_x_unit)
 
 
 def check_file_type(file_path):
@@ -155,17 +156,23 @@ def log_ys(ys):
     return log_y
 
 
-def process_original_data(file_data):
+def process_original_data(file_data, x_unit):
     """Seperate the x values and datasets of y stored in input array.
 
     Args:
         file_data (array): 2D array, the first column storing x-axis, other columns storing y-axis.
+        x_unit (string): '2theta' or 'q'
 
     Returns:
         array: 1D, transfer 2-theta to q
         array: 2D, each row as a seperate dataset of y, transfer to log(y)
     """
+    is_valid_x_unit(x_unit)
     validate_file_data(file_data)
-    x = get_q(file_data[0])  # 2-theta to q
-    ys = log_ys(file_data[1:])  # log format of intensity
+    if x_unit == '2theta' or x_unit == '1':
+        x = get_q(file_data[0])  # 2-theta to q
+        ys = log_ys(file_data[1:])  # log format of intensity
+    else:
+        x = file_data[0]
+        ys = file_data[1:]
     return x, ys

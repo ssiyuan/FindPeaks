@@ -15,7 +15,7 @@ from fitting_peaks import (
 
 def get_mesopore_extent(file_name):
     data = read_csv_dat(file_name)
-    x, ys = process_original_data(data)
+    x, ys = process_original_data(data,'2theta')
     plot_initial_3d(x, ys, index_min=40, index_max=600)
     csv_guess1 = [4.5, 0.029, 0.007]
     csv_guess2 = [1.2, 0.14, 0.002]

@@ -386,16 +386,14 @@ def plot_single_model(x, y, model_result, model_str):
         model_result (array): 1D, best fitting result
         model_str (string): name of the model
     """
-    plot_setting()
-    plt.title(f"{model_str} Result",size=50,weight='bold')
-    plt.rcParams.update({'font.size': 40})
+    plt.title(f"{model_str} Result",weight='bold')
     plt.rcParams.update({'font.weight': 'bold'})
-    plt.plot(x, y, '--', c='k', label='Original Data', linewidth=4.0)
-    plt.plot(x, model_result, '-', label='{}'.format(model_str), linewidth=4.0)
-    plt.plot(x, abs(model_result-y), '-', label='Error', linewidth=4.0)
+    plt.plot(x, y, '--', c='k', label='Original Data', linewidth=1.0)
+    plt.plot(x, model_result, '-', label='{}'.format(model_str), linewidth=1.0)
+    plt.plot(x, abs(model_result-y), '-', label='Error', linewidth=1.0)
     plt.legend()
-    plt.xlabel('2-theta',size=50,weight='bold')
-    plt.ylabel('Intensity',size=50,weight='bold')
+    plt.xlabel('2-theta',weight='bold')
+    plt.ylabel('Intensity',weight='bold')
     check_output_dir('output_figures')
     plt.savefig('output_figures/Comparison_{}.png'.format(model_str))
     # plt.show()
