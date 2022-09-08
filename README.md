@@ -75,8 +75,8 @@ This directory include codes, and data files used to test the performance:
 2. For the folder 'test_data', data used for the initial design of the program was stored. The ASCII files in folder named 'ASCII_data' proved that ASCII are accepted input type. 
 3. The four files stored in folder 'Zeolite' refers to SAXS data with Si/Al differnt Ratios. Applied to study the mesopore formation with the file 'main_evaluation.py'.
 4. There are two main functions in this folder tree. 
-    3.1 The main() function in main_CLI.py was used to provide a friendly CLI for users, which can help them run the program without understanding codes. It has more functions than main_evaluation.py, including comparing three models to choose the most suitable one. 
-    3.2 main() function in main_evaluation.py was used for the analysis of Mesopore structure formation from microporous zeolite. 
+4.1. The main() function in main_CLI.py was used to provide a friendly CLI for users, which can help them run the program without understanding codes. It has more functions than main_evaluation.py, including comparing three models to choose the most suitable one. 
+4.2. main() function in main_evaluation.py was used for the analysis of Mesopore structure formation from microporous zeolite. 
 5. import_files.py includes functions needed to read data from DAT, CSV and some XY files. Also process the input data to transfer $2\theta$ to $q$ and change $y$ to $log(y)$ to make peaks more obvious.
 6. fitting_peaks.py includes all functions used for curve fitting, including baseline detection, capturing data within peak range， and also the function of fitting, etc.
 7. validation.py is used to check input to significant functions.
