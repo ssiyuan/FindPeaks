@@ -1,16 +1,12 @@
 """Test the time needed for running the programme. """
 
-import numpy as np
-
 from lmfit.models import GaussianModel
 
 from import_files import (
     read_csv_dat,
-    read_ascii_dir,
     process_original_data)
 
 from fitting_peaks import (
-    plot_initial_2d,
     plot_initial_3d,
     summarize_data3D,
     summarize_peaks,
